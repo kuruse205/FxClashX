@@ -570,8 +570,16 @@ String getProxyDesc(Ref ref, Proxy proxy) {
     final groups = ref.watch(groupsProvider);
     final index = groups.indexWhere((element) => element.name == proxy.name);
     if (index == -1) return proxy.serverDescription ?? proxy.type;
+    // Custom description from YAML wins over the group type when present.
+    // Otherwise show the currently selected proxy instead of "Type(selection)".
+    final customDesc = globalState.groupDescriptions.value[proxy.name];
+    if (customDesc != null && customDesc.isNotEmpty) {
+      return customDesc;
+    }
     final state = ref.watch(getProxyCardStateProvider(proxy.name));
-    return "${proxy.serverDescription ?? proxy.type}(${state.proxyName.isNotEmpty ? state.proxyName : '*'})";
+    return state.proxyName.isNotEmpty
+        ? state.proxyName
+        : (proxy.serverDescription ?? proxy.type);
   }
 }
 

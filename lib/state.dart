@@ -53,6 +53,21 @@ class GlobalState {
   CorePalette? corePalette;
   DateTime? startTime;
   UpdateTasks tasks = [];
+  // Effective external-controller endpoint after merging subscription value
+  // over UI defaults. Empty string means disabled. Subscription value wins if
+  // present, otherwise falls back to the UI toggle default.
+  final effectiveExternalController = ValueNotifier<String>("");
+  // Effective values for fields that follow the overrideNetworkSettings gate
+  // but don't round-trip through patchClashConfigProvider. UI reads these when
+  // override is OFF so it shows what's actually applied (profile or fallback).
+  final effectiveTcpConcurrent = ValueNotifier<bool>(false);
+  final effectiveUnifiedDelay = ValueNotifier<bool>(false);
+  final effectiveLogLevel = ValueNotifier<String>("info");
+  final effectiveKeepAliveInterval = ValueNotifier<int>(30);
+  // Custom per-group descriptions parsed from the profile YAML
+  // (proxy-groups[*].description). Shown as the subtitle of a nested group
+  // card instead of its type (Fallback/URLTest/Selector).
+  final groupDescriptions = ValueNotifier<Map<String, String>>({});
   final navigatorKey = GlobalKey<NavigatorState>();
   AppController? _appController;
   GlobalKey<CommonScaffoldState> homeScaffoldKey = GlobalKey();
@@ -365,7 +380,34 @@ class GlobalState {
     final realPatchConfig = patchConfig.copyWith(
       tun: patchConfig.tun.getRealTun(config.networkProps.routeMode),
     );
-    rawConfig["external-controller"] = realPatchConfig.externalController.value;
+    // Custom "description" field on proxy-groups — extracted here because
+    // mihomo's /proxies API doesn't forward arbitrary YAML keys.
+    final parsedGroupDescriptions = <String, String>{};
+    final rawGroups = rawConfig["proxy-groups"];
+    if (rawGroups is List) {
+      for (final g in rawGroups) {
+        if (g is! Map) continue;
+        final name = g["name"];
+        if (name is! String) continue;
+        final desc = g["description"];
+        if (desc is String && desc.trim().isNotEmpty) {
+          parsedGroupDescriptions[name] = desc.trim();
+        }
+      }
+    }
+    groupDescriptions.value = parsedGroupDescriptions;
+    // external-controller: profile value always wins when present. The UI
+    // toggle only acts as a fallback because the enum hardcodes 127.0.0.1:9090
+    // and would otherwise silently override a subscription-provided endpoint
+    // (e.g. :9091). The overrideNetworkSettings gate is intentionally ignored
+    // here — users who set external-controller in their profile mean it.
+    final providerExternalController =
+        (rawConfig["external-controller"] as String?)?.trim() ?? "";
+    final effectiveExternalControllerValue = providerExternalController.isNotEmpty
+        ? providerExternalController
+        : realPatchConfig.externalController.value;
+    rawConfig["external-controller"] = effectiveExternalControllerValue;
+    effectiveExternalController.value = effectiveExternalControllerValue;
     if (rawConfig["external-ui"] == null || rawConfig["external-ui"] == "") {
       rawConfig["external-ui"] = "";
     }
@@ -373,12 +415,38 @@ class GlobalState {
     if (rawConfig["external-ui-url"] == null || rawConfig["external-ui-url"] == "") {
       rawConfig["external-ui-url"] = "";
     }
-    rawConfig["tcp-concurrent"] = realPatchConfig.tcpConcurrent;
-    rawConfig["unified-delay"] = realPatchConfig.unifiedDelay;
-    rawConfig["log-level"] = realPatchConfig.logLevel.name;
+    // These follow the same overrideNetworkSettings gate as other fields:
+    //   override ON  → UI value wins (always written)
+    //   override OFF → profile value wins, UI is fallback only if missing
+    // Effective values are exposed so the UI reflects what's actually applied
+    // when override is OFF (otherwise widgets would still show stored UI prefs).
+    final profileTcpConcurrent = rawConfig["tcp-concurrent"] as bool?;
+    final profileUnifiedDelay = rawConfig["unified-delay"] as bool?;
+    final profileLogLevel = rawConfig["log-level"] as String?;
+    final profileKeepAlive = (rawConfig["keep-alive-interval"] as num?)?.toInt();
+    final isOverride = config.appSetting.overrideNetworkSettings;
+    final effTcpConcurrent = isOverride
+        ? realPatchConfig.tcpConcurrent
+        : (profileTcpConcurrent ?? realPatchConfig.tcpConcurrent);
+    final effUnifiedDelay = isOverride
+        ? realPatchConfig.unifiedDelay
+        : (profileUnifiedDelay ?? realPatchConfig.unifiedDelay);
+    final effLogLevel = isOverride
+        ? realPatchConfig.logLevel.name
+        : (profileLogLevel ?? realPatchConfig.logLevel.name);
+    final effKeepAlive = isOverride
+        ? realPatchConfig.keepAliveInterval
+        : (profileKeepAlive ?? realPatchConfig.keepAliveInterval);
+    rawConfig["tcp-concurrent"] = effTcpConcurrent;
+    rawConfig["unified-delay"] = effUnifiedDelay;
+    rawConfig["log-level"] = effLogLevel;
+    rawConfig["keep-alive-interval"] = effKeepAlive;
+    effectiveTcpConcurrent.value = effTcpConcurrent;
+    effectiveUnifiedDelay.value = effUnifiedDelay;
+    effectiveLogLevel.value = effLogLevel;
+    effectiveKeepAliveInterval.value = effKeepAlive;
     rawConfig["port"] = 0;
     rawConfig["socks-port"] = 0;
-    rawConfig["keep-alive-interval"] = realPatchConfig.keepAliveInterval;
     rawConfig["port"] = realPatchConfig.port;
     rawConfig["socks-port"] = realPatchConfig.socksPort;
     rawConfig["redir-port"] = realPatchConfig.redirPort;

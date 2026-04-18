@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -310,6 +311,9 @@ func updateConfig(params *UpdateParams) {
 	}
 	if params.ExternalController != nil {
 		currentConfig.Controller.ExternalController = *params.ExternalController
+		if currentConfig.Controller.ExternalUI != "" {
+			route.SetUIPath(currentConfig.Controller.ExternalUI)
+		}
 		route.ReCreateServer(&route.Config{
 			Addr: currentConfig.Controller.ExternalController,
 		})
@@ -317,6 +321,7 @@ func updateConfig(params *UpdateParams) {
 
 	if params.Tun != nil {
 		general.Tun.Enable = params.Tun.Enable
+		pendingTunEnable = params.Tun.Enable
 		general.Tun.AutoRoute = *params.Tun.AutoRoute
 		general.Tun.Device = *params.Tun.Device
 		general.Tun.RouteAddress = *params.Tun.RouteAddress
@@ -335,23 +340,38 @@ func setupConfig(params *SetupParams) error {
 	extractProxyDescriptionsFromRaw(params.Config)
 	resetHealthCheckForwarderState()
 
+	parseStart := time.Now()
 	currentConfig, err = config.ParseRawConfig(params.Config)
 	if err != nil {
+		log.Errorln("[Config] ParseRawConfig failed, falling back to default: %v", err)
 		currentConfig, _ = config.ParseRawConfig(config.DefaultRawConfig())
 	}
+	log.Infoln("[Setup] ParseRawConfig took %s", time.Since(parseStart))
 	pendingTunEnable = currentConfig.General.Tun.Enable
 	currentConfig.General.Tun.Enable = false
 	// Parse and cache config only. Full runtime apply happens on Start.
+	applyStart := time.Now()
 	executor.ApplyConfig(currentConfig, false)
+	log.Infoln("[Setup] executor.ApplyConfig took %s", time.Since(applyStart))
 	currentConfig.General.Tun.Enable = pendingTunEnable
 	// External-controller lifecycle is independent from TUN start/stop.
 	// Recreate API server during setup so it survives app restarts without
 	// requiring a manual UI toggle.
+	if currentConfig.Controller.ExternalUI != "" {
+		route.SetUIPath(currentConfig.Controller.ExternalUI)
+	}
 	route.ReCreateServer(&route.Config{
 		Addr: currentConfig.Controller.ExternalController,
 	})
 	patchSelectGroup(params.SelectedMap)
 	updateListeners()
+
+	// Kick off pings immediately so the UI shows latencies as soon as the
+	// profile loads, without waiting for the user to start TUN or for each
+	// provider's own healthcheck-interval to elapse. The forwarder is started
+	// here (not only on Start) and keeps running until shutdown.
+	runInitialProviderHealthChecks()
+	startHealthCheckForwarder()
 
 	// Notify Flutter that all providers are loaded
 	sendMessage(Message{

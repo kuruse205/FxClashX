@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:flclashx/enum/enum.dart';
 import 'package:flclashx/plugins/app.dart';
 import 'package:flclashx/plugins/tile.dart';
 import 'package:flclashx/plugins/vpn.dart';
@@ -16,6 +17,7 @@ import 'application.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
+import 'models/core.dart' as core_models show Action;
 import 'models/models.dart';
 
 Future<void> main() async {
@@ -78,6 +80,53 @@ Future<void> _service(List<String> flags) async {
   commonPrint.log("[DART] Adding tile listener...");
   tile?.addListener(
     _TileListenerWithService(
+      onChangeMode: (mode) async {
+        commonPrint.log("[DART] TileService onChangeMode: $mode");
+        try {
+          final modeEnum = Mode.values.byName(mode);
+          final patched = globalState.config.patchClashConfig.copyWith(
+            mode: modeEnum,
+          );
+          globalState.config = globalState.config.copyWith(
+            patchClashConfig: patched,
+          );
+          await preferences.saveConfig(globalState.config);
+
+          // Try to apply to running core so the switch is immediate.
+          try {
+            final updateParams = UpdateParams(
+              tun: patched.tun
+                  .getRealTun(globalState.config.networkProps.routeMode),
+              allowLan: patched.allowLan,
+              findProcessMode: patched.findProcessMode,
+              mode: modeEnum,
+              logLevel: patched.logLevel,
+              ipv6: patched.ipv6,
+              tcpConcurrent: patched.tcpConcurrent,
+              externalController: patched.externalController,
+              unifiedDelay: patched.unifiedDelay,
+              mixedPort: patched.mixedPort,
+            );
+            final actionJson = json.encode(
+              core_models.Action(
+                id: "${ActionMethod.updateConfig.name}#${utils.id}",
+                method: ActionMethod.updateConfig,
+                data: json.encode(updateParams),
+              ),
+            );
+            final handler = clashLibHandler;
+            if (handler != null) {
+              unawaited(handler.invokeAction(actionJson));
+            }
+          } catch (e) {
+            debugPrint("onChangeMode: live updateConfig error: $e");
+          }
+
+          unawaited(tile?.updateMode(mode));
+        } catch (e) {
+          debugPrint("onChangeMode error: $e");
+        }
+      },
       onStart: () async {
         commonPrint.log("=== [DART] TileService onStart called ===");
         debugPrint("=== TileService onStart called ===");
@@ -271,6 +320,18 @@ Future<void> _service(List<String> flags) async {
   commonPrint.log("[DART] Signaling service ready to native side");
   await tile?.signalServiceReady();
   commonPrint.log("[DART] Service ready signal sent");
+
+  // Push initial mode to widget so the active button is highlighted correctly.
+  try {
+    final currentMode = globalState.config.patchClashConfig.mode.name;
+    unawaited(tile?.updateMode(currentMode));
+    final globalHeader =
+        globalState.config.currentProfile?.providerHeaders['flclashx-globalmode'];
+    final globalEnabled = globalHeader?.toLowerCase() != 'false';
+    unawaited(tile?.updateGlobalModeEnabled(globalEnabled));
+  } catch (e) {
+    debugPrint("Initial updateMode error (ignored): $e");
+  }
   
   commonPrint.log("[DART] quickStart=$quickStart");
   if (!quickStart) {
@@ -330,11 +391,14 @@ class _TileListenerWithService with TileListener {
   const _TileListenerWithService({
     required Function() onStart,
     required Function() onStop,
+    required Function(String mode) onChangeMode,
   }) : _onStart = onStart,
-       _onStop = onStop;
-  
+       _onStop = onStop,
+       _onChangeMode = onChangeMode;
+
   final Function() _onStart;
   final Function() _onStop;
+  final Function(String mode) _onChangeMode;
 
   @override
   void onStart() {
@@ -344,6 +408,11 @@ class _TileListenerWithService with TileListener {
   @override
   void onStop() {
     _onStop();
+  }
+
+  @override
+  void onChangeMode(String mode) {
+    _onChangeMode(mode);
   }
 }
 

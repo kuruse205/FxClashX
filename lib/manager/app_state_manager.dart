@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flclashx/common/common.dart';
 import 'package:flclashx/enum/enum.dart';
+import 'package:flclashx/plugins/tile.dart';
 import 'package:flclashx/providers/providers.dart';
 import 'package:flclashx/state.dart';
 import 'package:flutter/foundation.dart';
@@ -59,6 +60,24 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
           system.setMacOSDns(true);
         }
       },
+    );
+    ref.listenManual(
+      patchClashConfigProvider.select((state) => state.mode),
+      (prev, next) {
+        if (prev != next) {
+          tile?.updateMode(next.name);
+        }
+      },
+      fireImmediately: true,
+    );
+    ref.listenManual(
+      globalModeEnabledProvider,
+      (prev, next) {
+        if (prev != next) {
+          tile?.updateGlobalModeEnabled(next);
+        }
+      },
+      fireImmediately: true,
     );
     ref.listenManual(
       globalModeEnabledProvider,

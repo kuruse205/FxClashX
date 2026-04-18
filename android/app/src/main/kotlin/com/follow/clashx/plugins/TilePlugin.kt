@@ -13,19 +13,24 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     
     companion object {
         private const val TAG = "TilePlugin"
-        
+
         // Latch to signal when Dart side is ready
         @Volatile
         private var readyLatch: CountDownLatch? = null
-        
+
         // Pending action to execute when ready
         @Volatile
         private var pendingAction: PendingAction? = null
-        
+
+        // Mode change requested while the service engine was not yet alive.
+        // Picked up in handleServiceReady() once Dart is ready.
+        @Volatile
+        private var pendingMode: String? = null
+
         enum class PendingAction {
             START, STOP
         }
-        
+
         /**
          * Set a pending action to be executed when Dart is ready.
          * This is called from GlobalState when serviceEngine is being initialized.
@@ -34,6 +39,14 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             Log.d(TAG, "setPendingAction: $action")
             pendingAction = action
             readyLatch = CountDownLatch(1)
+        }
+
+        fun setPendingMode(mode: String) {
+            Log.d(TAG, "setPendingMode: $mode")
+            pendingMode = mode
+            if (readyLatch == null) {
+                readyLatch = CountDownLatch(1)
+            }
         }
         
         /**
@@ -80,6 +93,11 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         channel.invokeMethod("stop", null)
     }
 
+    fun handleChangeMode(mode: String) {
+        Log.d(TAG, "handleChangeMode: invoking 'changeMode' on channel, mode=$mode")
+        channel.invokeMethod("changeMode", mode)
+    }
+
     private fun handleDetached() {
         Log.d(TAG, "handleDetached: invoking 'detached' on channel")
         channel.invokeMethod("detached", null)
@@ -97,6 +115,21 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 handleServiceReady()
                 result.success(null)
             }
+            "updateMode" -> {
+                // Dart confirms the current mode — propagate to widgets.
+                val mode = call.arguments as? String
+                if (mode != null) {
+                    Log.d(TAG, "updateMode: $mode")
+                    com.follow.clashx.GlobalState.currentMode.postValue(mode)
+                }
+                result.success(null)
+            }
+            "updateGlobalModeEnabled" -> {
+                val enabled = call.arguments as? Boolean ?: true
+                Log.d(TAG, "updateGlobalModeEnabled: $enabled")
+                com.follow.clashx.GlobalState.globalModeEnabled.postValue(enabled)
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -108,12 +141,11 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
     
     private fun handleServiceReady() {
-        Log.d(TAG, "handleServiceReady called, pendingAction=$pendingAction")
-        
+        Log.d(TAG, "handleServiceReady called, pendingAction=$pendingAction, pendingMode=$pendingMode")
+
         // Signal that Dart is ready
         readyLatch?.countDown()
-        
-        // Execute pending action if any
+
         val action = pendingAction
         if (action != null) {
             Log.d(TAG, "Executing pending action: $action")
@@ -122,6 +154,13 @@ class TilePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 PendingAction.STOP -> handleStop()
             }
             clearPendingState()
+        }
+
+        val mode = pendingMode
+        if (mode != null) {
+            Log.d(TAG, "Executing pending mode: $mode")
+            handleChangeMode(mode)
+            pendingMode = null
         }
     }
 }

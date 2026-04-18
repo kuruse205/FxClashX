@@ -9,6 +9,8 @@ abstract mixin class TileListener {
 
   void onStop() {}
 
+  void onChangeMode(String mode) {}
+
   void onDetached(){
 
   }
@@ -34,6 +36,12 @@ class Tile {
           break;
         case "stop":
           listener.onStop();
+          break;
+        case "changeMode":
+          final mode = call.arguments as String?;
+          if (mode != null) {
+            listener.onChangeMode(mode);
+          }
           break;
         case "detached":
           listener.onDetached();
@@ -65,6 +73,27 @@ class Tile {
   Future<void> signalServiceReady() async {
     try {
       await _channel.invokeMethod('serviceReady');
+    } catch (e) {
+      // Ignore errors if tile service not available
+    }
+  }
+
+  /// Push the current clash mode to the native side so the home-screen
+  /// widget can highlight the active button.
+  Future<void> updateMode(String mode) async {
+    try {
+      await _channel.invokeMethod('updateMode', mode);
+    } catch (e) {
+      // Ignore errors if tile service not available
+    }
+  }
+
+  /// Tell the native side whether the Global-mode button should be shown
+  /// in the home-screen widget. Driven by the `flclashx-globalmode`
+  /// subscription header.
+  Future<void> updateGlobalModeEnabled(bool enabled) async {
+    try {
+      await _channel.invokeMethod('updateGlobalModeEnabled', enabled);
     } catch (e) {
       // Ignore errors if tile service not available
     }

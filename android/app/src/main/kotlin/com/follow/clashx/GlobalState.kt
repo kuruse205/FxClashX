@@ -32,6 +32,13 @@ object GlobalState {
     const val SUBSCRIPTION_NOTIFICATION_ID = 2
 
     val runState: MutableLiveData<RunState> = MutableLiveData<RunState>(RunState.STOP)
+    // Current clash mode — "rule", "global" or "direct". Pushed from Dart via
+    // TilePlugin.updateMode() so the home-screen widget can highlight the
+    // active button without duplicating state.
+    val currentMode: MutableLiveData<String> = MutableLiveData<String>("rule")
+    // Whether the Global mode button should be shown in the widget.
+    // Reflects the `flclashx-globalmode` subscription header — pushed from Dart.
+    val globalModeEnabled: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
     var flutterEngine: FlutterEngine? = null
     private var serviceEngine: FlutterEngine? = null
 
@@ -86,6 +93,28 @@ object GlobalState {
         val starting = handleStart()
         if (!starting) {
             handleStop()
+        }
+    }
+
+    /**
+     * Request a mode switch. Routes through TilePlugin to the Dart side
+     * (either the main engine if the app is open, or the background service
+     * engine), which updates patchClashConfig and pushes the change to core.
+     * Safe to call when the service engine is not yet alive — the method
+     * spins it up and queues the request via a pending action, mirroring
+     * how handleStart() works.
+     */
+    fun handleChangeMode(mode: String) {
+        Log.d("GlobalState", "handleChangeMode: $mode")
+        val tilePlugin = getCurrentTilePlugin()
+        if (tilePlugin != null) {
+            tilePlugin.handleChangeMode(mode)
+            // Optimistically reflect the new mode on the widget — Dart will
+            // confirm with updateMode() when the patch lands in core.
+            currentMode.postValue(mode)
+        } else {
+            TilePlugin.setPendingMode(mode)
+            initServiceEngine()
         }
     }
 

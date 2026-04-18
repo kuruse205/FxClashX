@@ -29,11 +29,13 @@ import (
 )
 
 var (
-	isInit            = false
-	externalProviders = map[string]cp.Provider{}
-	logSubscriber     observable.Subscription[log.Event]
-	healthCheckStopCh chan struct{}
-	healthCheckSeen   = map[string]string{}
+	isInit              = false
+	externalProviders   = map[string]cp.Provider{}
+	logSubscriber       observable.Subscription[log.Event]
+	healthCheckStopCh   chan struct{}
+	healthCheckSeen     = map[string]string{}
+	requestStopCh       chan struct{}
+	requestSeen         = map[string]bool{}
 )
 
 func handleInitClash(paramsString string) bool {
@@ -52,16 +54,34 @@ func handleInitClash(paramsString string) bool {
 
 func handleStartListener() bool {
 	runLock.Lock()
-	defer runLock.Unlock()
-	if currentConfig != nil {
-		currentConfig.General.Tun.Enable = pendingTunEnable
-		// Apply full runtime config only when user explicitly starts.
-		executor.ApplyConfig(currentConfig, true)
+	if isRunning {
+		runLock.Unlock()
+		return true
 	}
 	isRunning = true
-	updateListeners()
-	resolver.ResetConnection()
-	startHealthCheckForwarder()
+	if currentConfig != nil {
+		// On Android TUN is driven by a file descriptor from VpnService in
+		// handleStartTun, not by mihomo's internal TUN — keep cfg flag off.
+		// On desktop, updateListeners() below will (re)create the TUN device.
+		if runtime.GOOS == "android" {
+			currentConfig.General.Tun.Enable = false
+		} else {
+			currentConfig.General.Tun.Enable = pendingTunEnable
+		}
+	}
+	runLock.Unlock()
+
+	// setupConfig already ran executor.ApplyConfig when the profile was loaded,
+	// so proxies/rules/DNS/providers are live. Starting only needs to (re)bind
+	// listeners and (re)create the TUN device — calling ApplyConfig again would
+	// re-run updateProxies, loadProvider(wg.Wait()), updateDNS and runtime.GC()
+	// for no reason and was the main source of the long "start" delay.
+	go func() {
+		updateListeners()
+		resolver.ResetConnection()
+		startHealthCheckForwarder()
+		startRequestForwarder()
+	}()
 	return true
 }
 
@@ -69,7 +89,9 @@ func handleStopListener() bool {
 	runLock.Lock()
 	defer runLock.Unlock()
 	isRunning = false
-	stopHealthCheckForwarder()
+	// Keep health-check forwarder running so proxy pings stay fresh in the UI
+	// while the VPN is off. It is torn down only on full shutdown.
+	stopRequestForwarder()
 	stopListeners()
 	return true
 }
@@ -87,6 +109,7 @@ func handleForceGc() {
 
 func handleShutdown() bool {
 	stopHealthCheckForwarder()
+	stopRequestForwarder()
 	stopListeners()
 	executor.Shutdown()
 	runtime.GC()
@@ -127,11 +150,11 @@ func resetHealthCheckForwarderState() {
 
 func forwardHealthCheckDelays() {
 	runLock.Lock()
-	if !isRunning {
+	if currentConfig == nil {
 		runLock.Unlock()
 		return
 	}
-	triggerProviderHealthChecks()
+	touchProviders()
 	proxies := proxiesWithProviders()
 	runLock.Unlock()
 
@@ -143,13 +166,91 @@ func forwardHealthCheckDelays() {
 	}
 }
 
-func triggerProviderHealthChecks() {
+// runInitialProviderHealthChecks kicks off one HealthCheck per proxy provider
+// in background goroutines, so the UI has pings right after profile load
+// without waiting for the provider's own healthcheck-interval to elapse.
+// HealthCheck blocks until every URL test finishes, so each provider gets
+// its own goroutine to avoid serialising them.
+func runInitialProviderHealthChecks() {
 	for _, p := range tunnel.Providers() {
 		pp, ok := p.(*provider.ProxySetProvider)
 		if !ok {
 			continue
 		}
-		pp.HealthCheck()
+		go pp.HealthCheck()
+	}
+}
+
+// touchProviders marks all proxy providers as recently used so that their
+// internal lazy health-check goroutines actually execute on the next tick.
+// Unlike the previous triggerProviderHealthChecks which called HealthCheck()
+// (blocking until every URL test finishes), Touch() returns immediately and
+// lets the provider's own background goroutine perform the checks without
+// holding runLock for seconds.
+func touchProviders() {
+	for _, p := range tunnel.Providers() {
+		pp, ok := p.(*provider.ProxySetProvider)
+		if !ok {
+			continue
+		}
+		pp.Touch()
+	}
+}
+
+// startRequestForwarder polls the statistic manager for newly opened trackers
+// and pushes each one to Flutter via a RequestMessage. Upstream mihomo does
+// not expose the statistic.DefaultRequestNotify hook our old Clash.Meta fork
+// relied on, so we emulate it with a short-interval poll.
+func startRequestForwarder() {
+	if requestStopCh != nil {
+		return
+	}
+	requestSeen = map[string]bool{}
+	requestStopCh = make(chan struct{})
+	go func(stopCh chan struct{}) {
+		ticker := time.NewTicker(500 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				forwardNewRequests()
+			case <-stopCh:
+				return
+			}
+		}
+	}(requestStopCh)
+}
+
+func stopRequestForwarder() {
+	if requestStopCh == nil {
+		return
+	}
+	close(requestStopCh)
+	requestStopCh = nil
+	requestSeen = map[string]bool{}
+}
+
+func forwardNewRequests() {
+	alive := make(map[string]bool, len(requestSeen))
+	statistic.DefaultManager.Range(func(c statistic.Tracker) bool {
+		id := c.ID()
+		alive[id] = true
+		if requestSeen[id] {
+			return true
+		}
+		requestSeen[id] = true
+		sendMessage(Message{
+			Type: RequestMessage,
+			Data: c.Info(),
+		})
+		return true
+	})
+	// Drop ids that were closed so short-lived reused ids do not accumulate
+	// and a later reconnection with the same id can still be reported.
+	for id := range requestSeen {
+		if !alive[id] {
+			delete(requestSeen, id)
+		}
 	}
 }
 
