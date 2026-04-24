@@ -4,6 +4,7 @@ import 'package:flclashx/state.dart';
 import 'package:flclashx/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
+import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:flutter_highlight/themes/atom-one-light.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:highlight/languages/javascript.dart';
@@ -234,9 +235,14 @@ class _EditorPageState extends ConsumerState<EditorPage> {
               ),
             Expanded(
               child: CodeTheme(
-                data: CodeThemeData(styles: atomOneLightTheme),
+                data: CodeThemeData(
+                  styles: Theme.of(context).brightness == Brightness.dark
+                      ? atomOneDarkTheme
+                      : atomOneLightTheme,
+                ),
                 child: CodeField(
                   controller: _controller,
+                  wrap: true,
                   textStyle: TextStyle(
                     fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
                     fontFamily: FontFamily.jetBrainsMono.value,
