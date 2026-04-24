@@ -28,12 +28,12 @@ jobs:
           - platform: macos
             os: macos-latest
             arch: arm64
-          #- platform: windows
-          #  os: windows-11-arm
-          #  arch: arm64
-          #- platform: linux
-          #  os: ubuntu-24.04-arm
-          #  arch: arm64
+          - platform: windows
+            os: windows-11-arm
+            arch: arm64
+          - platform: linux
+            os: ubuntu-24.04-arm
+            arch: arm64
 
     steps:
       - name: Setup Rust for Windows ARM64
@@ -108,7 +108,15 @@ jobs:
           cache-dependency-path: |
             core/go.sum
 
+      - name: Setup Flutter (ARM)
+        if: startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "master"
+          cache: true
+
       - name: Setup Flutter
+        if: ${{ !(startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) }}
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.7"
