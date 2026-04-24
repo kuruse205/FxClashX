@@ -131,10 +131,18 @@ class Request {
     return null;
   }
 
-  Future<String?> downloadCoreUpdate(String downloadUrl, String targetPath) async {
+  Future<String?> downloadCoreUpdate(
+    String downloadUrl,
+    String targetPath, {
+    void Function(int received, int total)? onProgress,
+  }) async {
     try {
       final tmpPath = '$targetPath.tmp';
-      await _dio.download(downloadUrl, tmpPath);
+      await _dio.download(
+        downloadUrl,
+        tmpPath,
+        onReceiveProgress: onProgress,
+      );
       final tmpFile = File(tmpPath);
       if (!await tmpFile.exists()) return 'Download failed';
       final targetFile = File(targetPath);

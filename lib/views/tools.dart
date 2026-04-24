@@ -473,6 +473,8 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
   String _status = '';
   Map<String, dynamic>? _release;
   bool _busy = false;
+  double _progress = 0;
+  bool _downloading = false;
 
   String get _coreAssetName {
     final arch = Platform.version.contains('arm64') ||
@@ -488,6 +490,12 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
     return 'FlClashCore-$platform-$arch$ext';
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
   Future<void> _check() async {
     if (_busy) return;
     setState(() {
@@ -495,13 +503,12 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
       _status = AppLocalizations.of(context).coreUpdateChecking;
     });
     try {
-      final currentVersion = kCoreVersionFromSource;
-      _release = await request.checkForCoreUpdate(currentVersion);
+      _release = await request.checkForCoreUpdate(kCoreVersionFromSource);
       if (mounted) {
         setState(() {
           _busy = false;
           _status = _release != null
-              ? '${AppLocalizations.of(context).coreUpdateAvailable}: ${_release!['tag_name']}'
+              ? '${_release!['tag_name']}'
               : AppLocalizations.of(context).coreUpdateCurrent;
         });
       }
@@ -529,20 +536,33 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
     final url = asset['browser_download_url'] as String;
     setState(() {
       _busy = true;
+      _downloading = true;
+      _progress = 0;
       _status = AppLocalizations.of(context).coreUpdateDownloading;
     });
     await clashService?.shutdown();
     await Future.delayed(const Duration(seconds: 1));
-    final error = await request.downloadCoreUpdate(url, appPath.corePath);
+    final error = await request.downloadCoreUpdate(
+      url,
+      appPath.corePath,
+      onProgress: (received, total) {
+        if (!mounted || total <= 0) return;
+        setState(() => _progress = received / total);
+      },
+    );
     if (!mounted) return;
     if (error != null) {
       setState(() {
         _busy = false;
+        _downloading = false;
         _status = '${AppLocalizations.of(context).coreUpdateFailed}: $error';
       });
       return;
     }
-    setState(() => _status = AppLocalizations.of(context).coreUpdateSuccess);
+    setState(() {
+      _downloading = false;
+      _status = AppLocalizations.of(context).coreUpdateSuccess;
+    });
     await globalState.appController.restartCore();
     if (mounted) {
       setState(() {
@@ -556,11 +576,34 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
   @override
   Widget build(BuildContext context) {
     final appLocale = AppLocalizations.of(context);
-    return ListItem(
-      leading: const Icon(Icons.system_update),
-      title: Text(appLocale.coreUpdate),
-      subtitle: _status.isNotEmpty ? Text(_status) : null,
-      onTap: _release != null ? _download : _check,
+    final hasUpdate = _release != null && !_busy;
+    final color = hasUpdate
+        ? Theme.of(context).colorScheme.primary
+        : null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListItem(
+          leading: Icon(
+            hasUpdate ? Icons.system_update : Icons.update,
+            color: color,
+          ),
+          title: Text(
+            hasUpdate
+                ? appLocale.coreUpdateAvailable
+                : appLocale.coreUpdate,
+            style: hasUpdate ? TextStyle(color: color, fontWeight: FontWeight.bold) : null,
+          ),
+          subtitle: _status.isNotEmpty ? Text(_status) : null,
+          onTap: _release != null ? _download : _check,
+        ),
+        if (_downloading)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LinearProgressIndicator(value: _progress > 0 ? _progress : null),
+          ),
+      ],
     );
   }
 }
