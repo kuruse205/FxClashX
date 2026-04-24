@@ -276,13 +276,15 @@ class Request {
 
   Future<Map<String, dynamic>?> getCoreVersion() async {
     try {
+      final addr = globalState.effectiveExternalController.value;
+      if (addr.isEmpty) return null;
       final response = await _dio.get<Map<String, dynamic>>(
-        "http://$defaultExternalController/version",
+        "http://$addr/version",
         options: Options(
           responseType: ResponseType.json,
         ),
       ).timeout(const Duration(seconds: 2));
-      
+
       if (response.statusCode != HttpStatus.ok) return null;
       return response.data;
     } catch (_) {

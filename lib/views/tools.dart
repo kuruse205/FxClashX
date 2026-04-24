@@ -503,13 +503,15 @@ class _CoreUpdateItemState extends State<_CoreUpdateItem> {
       _status = AppLocalizations.of(context).coreUpdateChecking;
     });
     try {
-      _release = await request.checkForCoreUpdate(kCoreVersionFromSource);
+      final versionData = await request.getCoreVersion();
+      final runningVersion = versionData?['version'] as String? ?? kCoreVersionFromSource;
+      _release = await request.checkForCoreUpdate(runningVersion);
       if (mounted) {
         setState(() {
           _busy = false;
           _status = _release != null
-              ? '${_release!['tag_name']}'
-              : AppLocalizations.of(context).coreUpdateCurrent;
+              ? '${_release!['tag_name']} (current: $runningVersion)'
+              : '${AppLocalizations.of(context).coreUpdateCurrent} ($runningVersion)';
         });
       }
     } catch (e) {
