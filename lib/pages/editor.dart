@@ -243,6 +243,8 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                 child: CodeField(
                   controller: _controller,
                   wrap: true,
+                  expands: true,
+                  maxLines: null,
                   textStyle: TextStyle(
                     fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
                     fontFamily: FontFamily.jetBrainsMono.value,
