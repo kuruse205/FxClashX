@@ -89,6 +89,7 @@ class ClashService extends ClashHandlerInterface {
     if (Platform.isWindows && await system.checkIsAdmin()) {
       final isSuccess = await request.startCoreByHelper(arg);
       if (isSuccess) {
+        isStarting = false;
         return;
       }
     }

@@ -88,9 +88,6 @@ double getWidgetHeight(num lines) => max(lines * 84 + (lines - 1) * 16, 0).ap;
 
 const maxLength = 150;
 
-const mainIsolate = "FlClashXMainIsolate";
-
-const serviceIsolate = "FlClashXServiceIsolate";
 
 const defaultPrimaryColors = [
   0xFF795548,

@@ -1,0 +1,105 @@
+name: build-core
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. core-v1.19.23)"
+        required: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: ubuntu-latest
+            arch: amd64
+            goos: windows
+            goarch: amd64
+            ext: .exe
+          - platform: windows
+            os: ubuntu-latest
+            arch: arm64
+            goos: windows
+            goarch: arm64
+            ext: .exe
+          - platform: linux
+            os: ubuntu-latest
+            arch: amd64
+            goos: linux
+            goarch: amd64
+            ext: ""
+          - platform: linux
+            os: ubuntu-latest
+            arch: arm64
+            goos: linux
+            goarch: arm64
+            ext: ""
+          - platform: macos
+            os: macos-latest
+            arch: amd64
+            goos: darwin
+            goarch: amd64
+            ext: ""
+          - platform: macos
+            os: macos-latest
+            arch: arm64
+            goos: darwin
+            goarch: arm64
+            ext: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.0"
+          cache-dependency-path: core/go.sum
+
+      - name: Build core
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          cd core
+          TAG="${{ github.event.inputs.tag }}"
+          VERSION="${TAG#core-}"
+          go build \
+            -ldflags="-w -s -X github.com/metacubex/mihomo/constant.Version=$VERSION" \
+            -tags="with_gvisor,cmfa" \
+            -o "../FlClashCore-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.ext }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-${{ matrix.platform }}-${{ matrix.arch }}
+          path: FlClashCore-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: "Core ${{ github.event.inputs.tag }}"
+          body: "Desktop core update — drop-in replacement via in-app updater."
+          prerelease: true
+          files: dist/*

@@ -49,12 +49,19 @@ int jni_catch_exception(JNIEnv *env) {
 
 void jni_attach_thread(scoped_jni *jni) {
     JavaVM *vm = global_java_vm();
+    if (vm == nullptr) {
+        jni->env = nullptr;
+        jni->require_release = 0;
+        return;
+    }
     if (vm->GetEnv(reinterpret_cast<void **>(&jni->env), JNI_VERSION_1_6) == JNI_OK) {
         jni->require_release = 0;
         return;
     }
     if (vm->AttachCurrentThread(&jni->env, nullptr) != JNI_OK) {
-        abort();
+        jni->env = nullptr;
+        jni->require_release = 0;
+        return;
     }
     jni->require_release = 1;
 }

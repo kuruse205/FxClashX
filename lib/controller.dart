@@ -80,15 +80,8 @@ class AppController {
   }
 
   /// Update cached server name in VPN plugin for foreground notification
-  /// Also sends IPC message to service isolate to update selectedMap
   void _updateForegroundServerName(String groupName, String serverName) {
     vpn?.updateServerName(serverName);
-    // Send IPC message to service isolate (Android only)
-    clashLib?.sendIpcMessage({
-      'action': 'updateForegroundServer',
-      'groupName': groupName,
-      'serverName': serverName,
-    });
   }
 
   /// Initialize foreground notification cache with current profile and server
@@ -1185,6 +1178,28 @@ class AppController {
       );
     }
     await applyProfile();
+    unawaited(_persistColdStartParams());
+  }
+
+  Future<void> _persistColdStartParams() async {
+    try {
+      final clashConfig = globalState.config.patchClashConfig.copyWith.tun(
+        enable: false,
+      );
+      final setupParams = await globalState.getSetupParams(
+        pathConfig: clashConfig,
+      );
+      unawaited(clashLib?.saveParamsForColdStart(
+        initParams: InitParams(
+          homeDir: await appPath.homeDirPath,
+          version: await system.version,
+        ),
+        setupParams: setupParams,
+        state: globalState.getCoreState(),
+      ));
+    } catch (e) {
+      commonPrint.log("persistColdStartParams: $e");
+    }
   }
 
   Future<void> init() async {
@@ -1192,7 +1207,11 @@ class AppController {
       commonPrint.log(details.stack.toString());
     };
     updateTray(true);
-    await _initCore();
+    try {
+      await _initCore();
+    } catch (e) {
+      commonPrint.log("initCore failed (will retry on profile change): $e");
+    }
     await _initStatus();
     autoLaunch?.updateStatus(
       _ref.read(appSettingProvider).autoLaunch,

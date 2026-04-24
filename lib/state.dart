@@ -37,7 +37,6 @@ class GlobalState {
   static GlobalState? _instance;
   Map<CacheTag, double> cacheScrollPosition = {};
   Map<CacheTag, FixedMap<String, double>> cacheHeightMap = {};
-  bool isService = false;
   Timer? timer;
   Timer? groupsUpdateTimer;
   late Config config;
@@ -53,6 +52,7 @@ class GlobalState {
   CorePalette? corePalette;
   DateTime? startTime;
   UpdateTasks tasks = [];
+  Map<String, dynamic>? lastRuntimeConfig;
   // Effective external-controller endpoint after merging subscription value
   // over UI defaults. Empty string means disabled. Subscription value wins if
   // present, otherwise falls back to the UI toggle default.
@@ -208,27 +208,6 @@ class GlobalState {
       ),
     );
 
-  // Future<Map<String, dynamic>> getProfileMap(String id) async {
-  //   final profilePath = await appPath.getProfilePath(id);
-  //   final res = await Isolate.run<Result<dynamic>>(() async {
-  //     try {
-  //       final file = File(profilePath);
-  //       if (!await file.exists()) {
-  //         return Result.error("");
-  //       }
-  //       final value = await file.readAsString();
-  //       return Result.success(utils.convertYamlNode(loadYaml(value)));
-  //     } catch (e) {
-  //       return Result.error(e.toString());
-  //     }
-  //   });
-  //   if (res.isSuccess) {
-  //     return res.data as Map<String, dynamic>;
-  //   } else {
-  //     throw res.message;
-  //   }
-  // }
-
   Future<T?> showCommonDialog<T>({
     required Widget child,
     bool dismissible = true,
@@ -312,6 +291,7 @@ class GlobalState {
     final clashConfig = await patchRawConfig(
       patchConfig: pathConfig,
     );
+    lastRuntimeConfig = clashConfig;
     final params = SetupParams(
       config: clashConfig,
       selectedMap: config.currentProfile?.selectedMap ?? {},
@@ -494,7 +474,7 @@ class GlobalState {
     if (rawConfig["tun"] == null) {
       rawConfig["tun"] = {};
     }
-    rawConfig["tun"]["enable"] = realPatchConfig.tun.enable;
+    rawConfig["tun"]["enable"] = Platform.isAndroid ? true : realPatchConfig.tun.enable;
     rawConfig["tun"]["device"] = realPatchConfig.tun.device;
     rawConfig["tun"]["dns-hijack"] = realPatchConfig.tun.dnsHijack;
     
@@ -621,10 +601,7 @@ class GlobalState {
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
-    final configMap = await switch (clashLibHandler != null) {
-      true => clashLibHandler!.getConfig(profileId),
-      false => clashCore.getConfig(profileId),
-    };
+    final configMap = await clashCore.getConfig(profileId);
     configMap["rules"] = configMap["rule"];
     configMap.remove("rule");
     return configMap;

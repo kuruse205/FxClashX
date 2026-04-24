@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/metacubex/mihomo/adapter"
@@ -575,6 +576,9 @@ func handleStartLog() {
 	go func() {
 		for logData := range logSubscriber {
 			if logData.LogLevel < log.Level() {
+				continue
+			}
+			if strings.Contains(logData.Payload, "http: Server closed") {
 				continue
 			}
 			message := &Message{

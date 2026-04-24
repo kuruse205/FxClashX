@@ -2679,6 +2679,46 @@ class AppLocalizations {
     return Intl.message('Export file', name: 'exportFile', desc: '', args: []);
   }
 
+  /// `Restart core`
+  String get restartCore {
+    return Intl.message('Restart core', name: 'restartCore', desc: '', args: []);
+  }
+
+  /// `Restart the proxy core`
+  String get restartCoreDesc {
+    return Intl.message('Restart the proxy core', name: 'restartCoreDesc', desc: '', args: []);
+  }
+
+  /// `Running`
+  String get coreStatusRunning {
+    return Intl.message('Running', name: 'coreStatusRunning', desc: '', args: []);
+  }
+
+  /// `Restarting...`
+  String get coreStatusRestarting {
+    return Intl.message('Restarting...', name: 'coreStatusRestarting', desc: '', args: []);
+  }
+
+  /// `Stopped`
+  String get coreStatusStopped {
+    return Intl.message('Stopped', name: 'coreStatusStopped', desc: '', args: []);
+  }
+
+  /// `Runtime config`
+  String get runtimeConfig {
+    return Intl.message('Runtime config', name: 'runtimeConfig', desc: '', args: []);
+  }
+
+  /// `Runtime config is not available yet. Start VPN first.`
+  String get runtimeConfigNotAvailable {
+    return Intl.message(
+      'Runtime config is not available yet. Start VPN first.',
+      name: 'runtimeConfigNotAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The cache is corrupt. Do you want to clear it?`
   String get cacheCorrupt {
     return Intl.message(
@@ -3047,6 +3087,52 @@ class AppLocalizations {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Include in VPN`
+  String get includeInVpn {
+    return Intl.message('Include in VPN', name: 'includeInVpn', desc: '', args: []);
+  }
+
+  /// `Exclude from VPN`
+  String get excludeFromVpn {
+    return Intl.message('Exclude from VPN', name: 'excludeFromVpn', desc: '', args: []);
+  }
+
+  String get coreUpdate {
+    return Intl.message('Update core', name: 'coreUpdate', desc: '', args: []);
+  }
+
+  String get coreUpdateAvailable {
+    return Intl.message('Update available', name: 'coreUpdateAvailable', desc: '', args: []);
+  }
+
+  String get coreUpdateCurrent {
+    return Intl.message('Up to date', name: 'coreUpdateCurrent', desc: '', args: []);
+  }
+
+  String get coreUpdateDownloading {
+    return Intl.message('Downloading...', name: 'coreUpdateDownloading', desc: '', args: []);
+  }
+
+  String get coreUpdateSuccess {
+    return Intl.message('Core updated, restarting...', name: 'coreUpdateSuccess', desc: '', args: []);
+  }
+
+  String get coreUpdateFailed {
+    return Intl.message('Update failed', name: 'coreUpdateFailed', desc: '', args: []);
+  }
+
+  String get coreUpdateChecking {
+    return Intl.message('Checking...', name: 'coreUpdateChecking', desc: '', args: []);
+  }
+
+  String get whitelistModeDesc {
+    return Intl.message('Only selected apps will use VPN. All other apps will bypass it.', name: 'whitelistModeDesc', desc: '', args: []);
+  }
+
+  String get blacklistModeDesc {
+    return Intl.message('Selected apps will bypass VPN. All other apps will use it.', name: 'blacklistModeDesc', desc: '', args: []);
   }
 
   /// `Contact me`

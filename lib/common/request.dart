@@ -113,6 +113,44 @@ class Request {
     return data;
   }
 
+  Future<Map<String, dynamic>?> checkForCoreUpdate(String currentCoreVersion) async {
+    final response = await _dio.get(
+      "https://api.github.com/repos/$repository/releases",
+      options: Options(responseType: ResponseType.json),
+      queryParameters: {'per_page': 20},
+    );
+    if (response.statusCode != 200) return null;
+    final releases = response.data as List<dynamic>;
+    for (final release in releases) {
+      final tag = release['tag_name'] as String? ?? '';
+      if (!tag.startsWith('core-')) continue;
+      final remoteVersion = tag.replaceFirst('core-', '');
+      if (remoteVersion == currentCoreVersion) return null;
+      return release as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  Future<String?> downloadCoreUpdate(String downloadUrl, String targetPath) async {
+    try {
+      final tmpPath = '$targetPath.tmp';
+      await _dio.download(downloadUrl, tmpPath);
+      final tmpFile = File(tmpPath);
+      if (!await tmpFile.exists()) return 'Download failed';
+      final targetFile = File(targetPath);
+      if (await targetFile.exists()) {
+        await targetFile.delete();
+      }
+      await tmpFile.rename(targetPath);
+      if (!Platform.isWindows) {
+        await Process.run('chmod', ['+x', targetPath]);
+      }
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   final Map<String, IpInfo Function(Map<String, dynamic>)> _ipInfoSources = {
     "https://ipwho.is/": IpInfo.fromIpwhoIsJson,
     "https://api.ip.sb/geoip/": IpInfo.fromIpSbJson,
@@ -124,7 +162,7 @@ class Request {
     var failureCount = 0;
     final futures = _ipInfoSources.entries.map((source) async {
       final completer = Completer<Result<IpInfo?>>();
-      final future = Dio().get<Map<String, dynamic>>(
+      final future = _clashDio.get<Map<String, dynamic>>(
         source.key,
         cancelToken: cancelToken,
         options: Options(

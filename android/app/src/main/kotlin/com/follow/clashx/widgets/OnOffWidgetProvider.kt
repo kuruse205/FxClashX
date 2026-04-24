@@ -84,9 +84,12 @@ class OnOffWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        Log.d(TAG, "onReceive: ${intent.action}")
         ensureObservers()
         if (intent.action == ACTION_TOGGLE) {
+            if (GlobalState.runStateFlow.value == RunState.PENDING) {
+                Log.d(TAG, "Ignoring toggle — operation in progress")
+                return
+            }
             GlobalState.handleToggle()
         }
     }

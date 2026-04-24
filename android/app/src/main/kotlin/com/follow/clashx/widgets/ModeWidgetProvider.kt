@@ -90,8 +90,10 @@ class ModeWidgetProvider : AppWidgetProvider() {
                 if (globalEnabled) View.VISIBLE else View.GONE,
             )
 
-            // Toggle — colored logo when tunnel is up, monochrome otherwise.
-            val logo = if (runState == RunState.START) R.drawable.widget_logo_color else R.drawable.widget_logo_mono
+            val logo = when (runState) {
+                RunState.START -> R.drawable.widget_logo_color
+                else -> R.drawable.widget_logo_mono
+            }
             views.setImageViewResource(R.id.widget_toggle, logo)
             views.setOnClickPendingIntent(R.id.widget_toggle, pending(context, ACTION_TOGGLE))
 
@@ -148,7 +150,13 @@ class ModeWidgetProvider : AppWidgetProvider() {
         Log.d(TAG, "onReceive: ${intent.action}")
         ensureObservers()
         when (intent.action) {
-            ACTION_TOGGLE -> GlobalState.handleToggle()
+            ACTION_TOGGLE -> {
+                if (GlobalState.runStateFlow.value == RunState.PENDING) {
+                    Log.d(TAG, "Ignoring toggle — operation in progress")
+                    return
+                }
+                GlobalState.handleToggle()
+            }
             ACTION_MODE_RULE -> GlobalState.handleChangeMode("rule")
             ACTION_MODE_GLOBAL -> GlobalState.handleChangeMode("global")
             ACTION_MODE_DIRECT -> GlobalState.handleChangeMode("direct")

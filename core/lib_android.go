@@ -5,7 +5,6 @@ package main
 import "C"
 import (
 	"context"
-	bridge "core/dart-bridge"
 	"core/platform"
 	"core/state"
 	t "core/tun"
@@ -110,7 +109,7 @@ func handleStartTun(fd int, callback unsafe.Pointer) {
 			limit:    semaphore.NewWeighted(4),
 		}
 		initTunHook()
-		tunListener, _ := t.Start(fd, currentConfig.General.Tun.Device, currentConfig.General.Tun.Stack)
+		tunListener, _ := t.Start(fd, currentConfig.General.Tun)
 		if tunListener != nil {
 			log.Infoln("TUN address: %v", tunListener.Address())
 			tunHandler.listener = tunListener
@@ -121,6 +120,8 @@ func handleStartTun(fd int, callback unsafe.Pointer) {
 }
 
 func handleGetRunTime() string {
+	tunLock.Lock()
+	defer tunLock.Unlock()
 	if runTime == nil {
 		return ""
 	}
@@ -216,18 +217,20 @@ func nextHandle(action *Action, result ActionResult) bool {
 }
 
 //export quickStart
-func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.char, port C.longlong) {
-	i := int64(port)
+func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.char, callback unsafe.Pointer) {
 	paramsString := C.GoString(initParamsChar)
 	bytes := []byte(C.GoString(paramsChar))
 	stateParams := C.GoString(stateParamsChar)
 	go func() {
-		res := handleInitClash(paramsString)
-		if res == false {
-			bridge.SendToPort(i, "init error")
+		// Callback lifetime is managed on the JVM side: invoke_callback_impl deletes
+		// the global ref after delivering onResult. Every path below fires the
+		// callback exactly once.
+		if !handleInitClash(paramsString) {
+			invokeCallback(callback, "init error")
+			return
 		}
 		handleSetState(stateParams)
-		bridge.SendToPort(i, handleSetupConfig(bytes))
+		invokeCallback(callback, handleSetupConfig(bytes))
 	}()
 }
 

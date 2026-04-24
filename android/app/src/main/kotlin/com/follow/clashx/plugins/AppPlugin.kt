@@ -325,8 +325,13 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         vpnCallBack = callBack
         val intent = VpnService.prepare(FlClashXApplication.getAppContext())
         if (intent != null) {
-            activityRef?.get()?.startActivityForResult(intent, VPN_PERMISSION_REQUEST_CODE)
-            return
+            val activity = activityRef?.get()
+            if (activity != null) {
+                activity.startActivityForResult(intent, VPN_PERMISSION_REQUEST_CODE)
+                return
+            }
+            // Activity unavailable — permission dialog can't be shown, proceed anyway
+            // (will fail at builder.establish() if permission not granted)
         }
         vpnCallBack?.invoke()
     }
@@ -447,11 +452,8 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     private fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == VPN_PERMISSION_REQUEST_CODE) {
-            if (resultCode == FlutterActivity.RESULT_OK) {
-                GlobalState.initServiceEngine()
-                vpnCallBack?.invoke()
-            }
+        if (requestCode == VPN_PERMISSION_REQUEST_CODE && resultCode == FlutterActivity.RESULT_OK) {
+            vpnCallBack?.invoke()
         }
         return true
     }

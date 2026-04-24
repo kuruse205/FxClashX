@@ -347,18 +347,15 @@ func setupConfig(params *SetupParams) error {
 		currentConfig, _ = config.ParseRawConfig(config.DefaultRawConfig())
 	}
 	log.Infoln("[Setup] ParseRawConfig took %s", time.Since(parseStart))
-	suppressTun := !isRunning
-	if suppressTun {
-		pendingTunEnable = currentConfig.General.Tun.Enable
+	pendingTunEnable = currentConfig.General.Tun.Enable
+	if runtime.GOOS == "android" || !isRunning {
 		currentConfig.General.Tun.Enable = false
 	}
 	// Parse and cache config only. Full runtime apply happens on Start.
 	applyStart := time.Now()
 	executor.ApplyConfig(currentConfig, false)
 	log.Infoln("[Setup] executor.ApplyConfig took %s", time.Since(applyStart))
-	if suppressTun {
-		currentConfig.General.Tun.Enable = pendingTunEnable
-	}
+	currentConfig.General.Tun.Enable = pendingTunEnable
 	// External-controller lifecycle is independent from TUN start/stop.
 	// Recreate API server during setup so it survives app restarts without
 	// requiring a manual UI toggle.
