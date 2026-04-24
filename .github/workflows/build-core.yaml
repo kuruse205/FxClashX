@@ -3,8 +3,8 @@ name: build-core
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Release tag (e.g. core-v1.19.23)"
+      version:
+        description: "Core version (e.g. v1.19.24)"
         required: true
 
 jobs:
@@ -70,10 +70,8 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           cd core
-          TAG="${{ github.event.inputs.tag }}"
-          VERSION="${TAG#core-}"
           go build \
-            -ldflags="-w -s -X github.com/metacubex/mihomo/constant.Version=$VERSION" \
+            -ldflags="-w -s -X github.com/metacubex/mihomo/constant.Version=${{ github.event.inputs.version }}" \
             -tags="with_gvisor,cmfa" \
             -o "../FlClashCore-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.ext }}"
 
@@ -98,8 +96,8 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: "Core ${{ github.event.inputs.tag }}"
-          body: "Desktop core update — drop-in replacement via in-app updater."
+          tag_name: "core-${{ github.event.inputs.version }}"
+          name: "Core ${{ github.event.inputs.version }}"
+          body: "Desktop core ${{ github.event.inputs.version }}"
           prerelease: true
           files: dist/*
