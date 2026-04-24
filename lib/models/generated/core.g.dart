@@ -333,6 +333,7 @@ const _$ActionMethodEnumMap = {
   ActionMethod.getMemory: 'getMemory',
   ActionMethod.crash: 'crash',
   ActionMethod.setupConfig: 'setupConfig',
+  ActionMethod.getCoreVersion: 'getCoreVersion',
   ActionMethod.setState: 'setState',
   ActionMethod.startTun: 'startTun',
   ActionMethod.stopTun: 'stopTun',

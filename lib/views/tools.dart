@@ -669,7 +669,7 @@ class _CoreStatusItemState extends State<_CoreStatusItem> {
     try {
       await globalState.appController.restartCore();
       if (mounted) {
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 2));
         final v = await clashCore.getCoreVersion();
         setState(() {
           _state = _CoreState.running;
