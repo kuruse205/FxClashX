@@ -622,7 +622,6 @@ class _CoreStatusItem extends StatefulWidget {
 
 class _CoreStatusItemState extends State<_CoreStatusItem> {
   _CoreState _state = _CoreState.stopped;
-  String _version = '';
 
   @override
   void initState() {
@@ -633,16 +632,8 @@ class _CoreStatusItemState extends State<_CoreStatusItem> {
   Future<void> _checkCoreStatus() async {
     try {
       final alive = await clashCore.isInit;
-      if (alive) {
-        final v = await clashCore.getCoreVersion();
-        if (mounted) {
-          setState(() {
-            _state = _CoreState.running;
-            _version = v;
-          });
-        }
-      } else {
-        if (mounted) setState(() => _state = _CoreState.stopped);
+      if (mounted) {
+        setState(() => _state = alive ? _CoreState.running : _CoreState.stopped);
       }
     } catch (_) {
       if (mounted) setState(() => _state = _CoreState.stopped);
@@ -656,9 +647,7 @@ class _CoreStatusItemState extends State<_CoreStatusItem> {
   };
 
   String _statusText(AppLocalizations l) => switch (_state) {
-    _CoreState.running => _version.isNotEmpty
-        ? '${l.coreStatusRunning}, $_version'
-        : l.coreStatusRunning,
+    _CoreState.running => l.coreStatusRunning,
     _CoreState.restarting => l.coreStatusRestarting,
     _CoreState.stopped => l.coreStatusStopped,
   };
@@ -668,14 +657,7 @@ class _CoreStatusItemState extends State<_CoreStatusItem> {
     setState(() => _state = _CoreState.restarting);
     try {
       await globalState.appController.restartCore();
-      if (mounted) {
-        await Future.delayed(const Duration(seconds: 2));
-        final v = await clashCore.getCoreVersion();
-        setState(() {
-          _state = _CoreState.running;
-          _version = v.isNotEmpty ? v : _version;
-        });
-      }
+      if (mounted) setState(() => _state = _CoreState.running);
     } catch (_) {
       if (mounted) setState(() => _state = _CoreState.stopped);
     }
