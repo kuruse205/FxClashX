@@ -481,6 +481,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "excludeFromVpn": MessageLookupByLibrary.simpleMessage("Исключить из VPN"),
     "whitelistModeDesc": MessageLookupByLibrary.simpleMessage("Только выбранные приложения будут использовать VPN. Все остальные — напрямую."),
     "blacklistModeDesc": MessageLookupByLibrary.simpleMessage("Выбранные приложения обойдут VPN. Все остальные — через VPN."),
+    "hwidNotSupported": MessageLookupByLibrary.simpleMessage("HWID не включен на этом устройстве. Пожалуйста, включите его в настройках приложения."),
     "coreUpdate": MessageLookupByLibrary.simpleMessage("Обновить ядро"),
     "coreUpdateAvailable": MessageLookupByLibrary.simpleMessage("Доступно обновление"),
     "coreUpdateCurrent": MessageLookupByLibrary.simpleMessage("Актуальная версия"),

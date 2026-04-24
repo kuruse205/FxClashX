@@ -3127,6 +3127,10 @@ class AppLocalizations {
     return Intl.message('Checking...', name: 'coreUpdateChecking', desc: '', args: []);
   }
 
+  String get hwidNotSupported {
+    return Intl.message('HWID is not enabled on this device. Please enable it in the application settings.', name: 'hwidNotSupported', desc: '', args: []);
+  }
+
   String get whitelistModeDesc {
     return Intl.message('Only selected apps will use VPN. All other apps will bypass it.', name: 'whitelistModeDesc', desc: '', args: []);
   }

@@ -371,20 +371,30 @@ class AppController {
       shouldSendHeaders: shouldSend,
     );
 
-    final headers = newProfile.providerHeaders;
-    if (headers.isNotEmpty) {
-      _applyAllHeaderSettings(newProfile, isNewProfile: false);
+    final mergedHeaders = Map<String, String>.from(profile.providerHeaders)
+      ..addAll(newProfile.providerHeaders);
+    final mergedProfile = newProfile.copyWith(
+      providerHeaders: mergedHeaders,
+      isUpdating: false,
+    );
+
+    if (mergedHeaders.isNotEmpty) {
+      _applyAllHeaderSettings(mergedProfile, isNewProfile: false);
     }
 
-    final showHwidLimit = headers['x-hwid-limit']?.toLowerCase() == 'true';
-    final announceText = headers['announce'];
+    final showHwidLimit = mergedHeaders['x-hwid-max-devices-reached']?.toLowerCase() == 'true';
+    final announceText = mergedHeaders['announce'];
     if (showHwidLimit && announceText != null && announceText.isNotEmpty) {
-      _showHwidLimitNotice(announceText, headers['support-url']);
+      _showHwidLimitNotice(announceText, mergedHeaders['support-url']);
+    }
+
+    if (mergedHeaders['x-hwid-not-supported']?.toLowerCase() == 'true') {
+      _showHwidNotSupportedNotice();
     }
 
     _ref
         .read(profilesProvider.notifier)
-        .setProfile(newProfile.copyWith(isUpdating: false));
+        .setProfile(mergedProfile);
 
     if (profile.id == _ref.read(currentProfileIdProvider)) {
       applyProfileDebounce(silence: true);
@@ -398,6 +408,14 @@ class AppController {
         .catchError((e) {
       commonPrint.log("Error checking subscription: $e");
     }));
+  }
+
+  void _showHwidNotSupportedNotice() {
+    globalState.showMessage(
+      title: 'HWID',
+      message: TextSpan(text: appLocalizations.hwidNotSupported),
+      cancelable: false,
+    );
   }
 
   void _showHwidLimitNotice(String encodedText, String? supportUrl) {
@@ -1349,10 +1367,13 @@ class AppController {
         _applyAllHeaderSettings(profile, isNewProfile: true);
 
         final headers = profile.providerHeaders;
-        final showHwidLimit = headers['x-hwid-limit']?.toLowerCase() == 'true';
+        final showHwidLimit = headers['x-hwid-max-devices-reached']?.toLowerCase() == 'true';
         final announceText = headers['announce'];
         if (showHwidLimit && announceText != null && announceText.isNotEmpty) {
           _showHwidLimitNotice(announceText, headers['support-url']);
+        }
+        if (headers['x-hwid-not-supported']?.toLowerCase() == 'true') {
+          _showHwidNotSupportedNotice();
         }
 
         await addProfile(profile);

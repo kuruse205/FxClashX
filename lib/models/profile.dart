@@ -199,7 +199,8 @@ extension ProfileExtension on Profile {
       'announce',
       'support-url', 
       'profile-update-interval',
-      'x-hwid-limit',
+      'x-hwid-max-devices-reached',
+      'x-hwid-not-supported',
     ];
     
     for (final headerName in headersToCollect) {

@@ -341,6 +341,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "excludeFromVpn": MessageLookupByLibrary.simpleMessage("VPNから除外"),
     "whitelistModeDesc": MessageLookupByLibrary.simpleMessage("選択したアプリのみVPNを使用します。他のアプリは直接接続します。"),
     "blacklistModeDesc": MessageLookupByLibrary.simpleMessage("選択したアプリはVPNをバイパスします。他のアプリはVPNを使用します。"),
+    "hwidNotSupported": MessageLookupByLibrary.simpleMessage("このデバイスではHWIDが有効になっていません。アプリの設定で有効にしてください。"),
     "coreUpdate": MessageLookupByLibrary.simpleMessage("コアを更新"),
     "coreUpdateAvailable": MessageLookupByLibrary.simpleMessage("更新あり"),
     "coreUpdateCurrent": MessageLookupByLibrary.simpleMessage("最新版です"),

@@ -309,6 +309,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "excludeFromVpn": MessageLookupByLibrary.simpleMessage("从VPN排除"),
     "whitelistModeDesc": MessageLookupByLibrary.simpleMessage("仅选中的应用使用VPN，其他应用直连。"),
     "blacklistModeDesc": MessageLookupByLibrary.simpleMessage("选中的应用绕过VPN，其他应用使用VPN。"),
+    "hwidNotSupported": MessageLookupByLibrary.simpleMessage("此设备未启用HWID。请在应用设置中启用。"),
     "coreUpdate": MessageLookupByLibrary.simpleMessage("更新内核"),
     "coreUpdateAvailable": MessageLookupByLibrary.simpleMessage("有可用更新"),
     "coreUpdateCurrent": MessageLookupByLibrary.simpleMessage("已是最新"),
