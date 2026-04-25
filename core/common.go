@@ -37,6 +37,7 @@ var (
 	mBatch, _         = batch.New[bool](context.Background(), batch.WithConcurrencyNum[bool](50))
 	proxyDescriptions = map[string]string{}
 	pendingTunEnable  = false
+	currentTestURL    = "https://www.gstatic.com/generate_204"
 )
 
 type ExternalProviders []ExternalProvider
@@ -339,6 +340,9 @@ func setupConfig(params *SetupParams) error {
 
 	extractProxyDescriptionsFromRaw(params.Config)
 	resetHealthCheckForwarderState()
+	if params.TestURL != "" {
+		currentTestURL = params.TestURL
+	}
 
 	parseStart := time.Now()
 	currentConfig, err = config.ParseRawConfig(params.Config)

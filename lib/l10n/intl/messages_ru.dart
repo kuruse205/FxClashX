@@ -180,6 +180,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
       "Экспорт в буфер обмена",
     ),
+    "collapseAll": MessageLookupByLibrary.simpleMessage("Свернуть все"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage(
       "Импорт из буфера обмена",
     ),
@@ -278,6 +279,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "existsTip": m3,
     "exit": MessageLookupByLibrary.simpleMessage("Выход"),
     "expand": MessageLookupByLibrary.simpleMessage("Стандартный"),
+    "expandAll": MessageLookupByLibrary.simpleMessage("Развернуть все"),
     "expirationTime": MessageLookupByLibrary.simpleMessage("Время истечения"),
     "expiresOn": MessageLookupByLibrary.simpleMessage("Истекает"),
     "exportFile": MessageLookupByLibrary.simpleMessage("Экспорт файла"),
@@ -347,6 +349,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "global": MessageLookupByLibrary.simpleMessage("Глобальный"),
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
+    "goToSelected": MessageLookupByLibrary.simpleMessage("К выбранному"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Перейти к загрузке"),
     "gratitude": MessageLookupByLibrary.simpleMessage("Благодарность"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage(
@@ -773,6 +776,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tabAnimationDesc": MessageLookupByLibrary.simpleMessage(
       "Работает только в мобильном режиме",
     ),
+    "testAllDelay": MessageLookupByLibrary.simpleMessage("Проверить все задержки"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("Параллельный TCP"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage(
       "Использовать параллельные TCP-соединения",

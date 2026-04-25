@@ -177,6 +177,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "This will delete all app data and restart the application. Are you sure?",
     ),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("Export clipboard"),
+    "collapseAll": MessageLookupByLibrary.simpleMessage("Collapse all"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage("Clipboard import"),
     "color": MessageLookupByLibrary.simpleMessage("Color"),
     "colorSchemes": MessageLookupByLibrary.simpleMessage("Color schemes"),
@@ -267,6 +268,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "existsTip": m3,
     "exit": MessageLookupByLibrary.simpleMessage("Exit"),
     "expand": MessageLookupByLibrary.simpleMessage("Standard"),
+    "expandAll": MessageLookupByLibrary.simpleMessage("Expand all"),
     "expirationTime": MessageLookupByLibrary.simpleMessage("Expiration time"),
     "expiresOn": MessageLookupByLibrary.simpleMessage("Expires on"),
     "exportFile": MessageLookupByLibrary.simpleMessage("Export file"),
@@ -331,6 +333,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "global": MessageLookupByLibrary.simpleMessage("Global"),
     "go": MessageLookupByLibrary.simpleMessage("Go"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Go to download"),
+    "goToSelected": MessageLookupByLibrary.simpleMessage("Go to selected"),
     "gratitude": MessageLookupByLibrary.simpleMessage("Gratitude"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage(
       "Do you want to cache the changes?",
@@ -736,6 +739,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Attach HTTP proxy to VpnService",
     ),
     "tab": MessageLookupByLibrary.simpleMessage("Tab"),
+    "testAllDelay": MessageLookupByLibrary.simpleMessage("Test all delays"),
     "tabAnimation": MessageLookupByLibrary.simpleMessage("Tab animation"),
     "tabAnimationDesc": MessageLookupByLibrary.simpleMessage(
       "Effective only in mobile view",

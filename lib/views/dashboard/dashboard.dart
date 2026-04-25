@@ -79,14 +79,13 @@ class _DashboardViewState extends ConsumerState<DashboardView> with PageMixin {
               return const SizedBox.shrink();
             }
 
-            return IconButton(
-              icon: _buildIsEdit((isEdit) => isEdit
+            return _buildIsEdit((isEdit) => IconButton(
+              tooltip: isEdit ? appLocalizations.save : appLocalizations.edit,
+              icon: isEdit
                     ? const Icon(Icons.save)
-                    : const Icon(
-                        Icons.edit,
-                      )),
+                    : const Icon(Icons.edit),
               onPressed: _handleUpdateIsEdit,
-            );
+            ));
           },
         ),
       ];

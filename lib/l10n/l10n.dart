@@ -3687,6 +3687,26 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Test all delays`
+  String get testAllDelay {
+    return Intl.message('Test all delays', name: 'testAllDelay', desc: '', args: []);
+  }
+
+  /// `Go to selected`
+  String get goToSelected {
+    return Intl.message('Go to selected', name: 'goToSelected', desc: '', args: []);
+  }
+
+  /// `Expand all`
+  String get expandAll {
+    return Intl.message('Expand all', name: 'expandAll', desc: '', args: []);
+  }
+
+  /// `Collapse all`
+  String get collapseAll {
+    return Intl.message('Collapse all', name: 'collapseAll', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -632,6 +632,50 @@ func handleGetConfig(path string) (*config.RawConfig, error) {
 	return prof, nil
 }
 
+func handleHealthCheck(groupName string, fn func(value string)) {
+	go func() {
+		proxies := tunnel.Proxies()
+		expectedStatus, _ := utils.NewUnsignedRanges[uint16]("")
+		defaultUrl := currentTestURL
+
+		for name, proxy := range proxies {
+			if groupName != "" && name != groupName {
+				continue
+			}
+			group, ok := proxy.Adapter().(outboundgroup.ProxyGroup)
+			if !ok {
+				continue
+			}
+			testUrl := ""
+			for _, p := range group.Providers() {
+				if u := p.HealthCheckURL(); u != "" {
+					testUrl = u
+					break
+				}
+			}
+			if testUrl == "" {
+				testUrl = defaultUrl
+			}
+			log.Infoln("[HealthCheck] testing group: %s url: %s", name, testUrl)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			dm, err := group.URLTest(ctx, testUrl, expectedStatus)
+			cancel()
+			if err != nil {
+				log.Warnln("[HealthCheck] group %s error: %v", name, err)
+				continue
+			}
+			for proxyName, delay := range dm {
+				sendMessage(Message{
+					Type: DelayMessage,
+					Data: &Delay{Name: proxyName, Value: int32(delay)},
+				})
+			}
+			log.Infoln("[HealthCheck] group %s done, %d results", name, len(dm))
+		}
+		fn("")
+	}()
+}
+
 func handleCrash() {
 	panic("handle invoke crash")
 }

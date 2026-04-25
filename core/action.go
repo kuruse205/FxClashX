@@ -185,6 +185,12 @@ func handleAction(action *Action, result ActionResult) {
 		data := action.Data.(string)
 		handleSetState(data)
 		result.success(true)
+	case healthCheckMethod:
+		groupName, _ := action.Data.(string)
+		handleHealthCheck(groupName, func(value string) {
+			result.success(value)
+		})
+		return
 	case crashMethod:
 		result.success(true)
 		handleCrash()

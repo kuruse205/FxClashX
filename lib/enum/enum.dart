@@ -277,6 +277,7 @@ enum ActionMethod {
   crash,
   setupConfig,
   getCoreVersion,
+  healthCheck,
 
   ///Android,
   setState,

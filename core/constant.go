@@ -106,6 +106,7 @@ const (
 	setupConfigMethod              Method = "setupConfig"
 	getConfigMethod                Method = "getConfig"
 	getCoreVersionMethod           Method = "getCoreVersion"
+	healthCheckMethod              Method = "healthCheck"
 )
 
 type Method string

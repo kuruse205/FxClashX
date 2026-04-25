@@ -24,6 +24,8 @@ mixin ClashInterface {
 
   Future<String> asyncTestDelay(String url, String proxyName);
 
+  Future<void> healthCheck([String groupName = '']);
+
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
   FutureOr<String> setupConfig(SetupParams setupParams);
@@ -353,6 +355,13 @@ abstract class ClashHandlerInterface with ClashInterface {
         ),
     );
   }
+
+  @override
+  Future<void> healthCheck([String groupName = '']) => invoke<String>(
+      method: ActionMethod.healthCheck,
+      data: groupName,
+      timeout: const Duration(seconds: 30),
+    );
 
   @override
   FutureOr<String> getCountryCode(String ip) => invoke<String>(
