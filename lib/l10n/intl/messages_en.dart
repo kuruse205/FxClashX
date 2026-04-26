@@ -793,6 +793,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Update All Geo Files",
     ),
     "updated": MessageLookupByLibrary.simpleMessage("Updated"),
+    "updateMethod": MessageLookupByLibrary.simpleMessage("Update method"),
+    "updateMethodDirect": MessageLookupByLibrary.simpleMessage("Direct"),
+    "updateMethodProxy": MessageLookupByLibrary.simpleMessage("Via proxy"),
     "upload": MessageLookupByLibrary.simpleMessage("Upload"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage(

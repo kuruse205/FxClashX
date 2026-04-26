@@ -30,6 +30,7 @@ class _EditProfileViewState extends State<EditProfileView> {
   late TextEditingController urlController;
   late TextEditingController autoUpdateDurationController;
   late bool autoUpdate;
+  late UpdateMethod updateMethod;
   String? rawText;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final fileInfoNotifier = ValueNotifier<FileInfo?>(null);
@@ -43,6 +44,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     labelController = TextEditingController(text: widget.profile.label);
     urlController = TextEditingController(text: widget.profile.url);
     autoUpdate = widget.profile.autoUpdate;
+    updateMethod = widget.profile.updateMethod;
     autoUpdateDurationController = TextEditingController(
       text: widget.profile.autoUpdateDuration.inMinutes.toString(),
     );
@@ -58,6 +60,7 @@ class _EditProfileViewState extends State<EditProfileView> {
           url: urlController.text,
           label: labelController.text,
           autoUpdate: autoUpdate,
+          updateMethod: updateMethod,
           autoUpdateDuration: Duration(
             minutes: int.parse(
               autoUpdateDurationController.text,
@@ -285,6 +288,29 @@ class _EditProfileViewState extends State<EditProfileView> {
               },
             ),
           ),
+        ListItem<UpdateMethod>.options(
+          title: Text(appLocalizations.updateMethod),
+          subtitle: Text(
+            updateMethod == UpdateMethod.proxy
+                ? appLocalizations.updateMethodProxy
+                : appLocalizations.updateMethodDirect,
+          ),
+          delegate: OptionsDelegate<UpdateMethod>(
+            title: appLocalizations.updateMethod,
+            options: UpdateMethod.values,
+            textBuilder: (value) => switch (value) {
+              UpdateMethod.proxy => appLocalizations.updateMethodProxy,
+              UpdateMethod.direct => appLocalizations.updateMethodDirect,
+            },
+            value: updateMethod,
+            onChanged: (value) {
+              if (value == null || value == updateMethod) return;
+              setState(() {
+                updateMethod = value;
+              });
+            },
+          ),
+        ),
       ],
       ValueListenableBuilder<FileInfo?>(
         valueListenable: fileInfoNotifier,

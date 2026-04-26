@@ -18,6 +18,7 @@ import com.follow.clashx.common.Components
 import com.follow.clashx.common.GlobalState as CommonGlobalState
 import com.follow.clashx.service.models.NotificationParams
 import com.follow.clashx.service.models.VpnOptions
+import com.follow.clashx.service.models.gsonSanitized
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -150,7 +151,7 @@ class ServicePlugin :
     private fun handleStart(call: MethodCall, result: MethodChannel.Result) {
         val json = call.argument<String>("data") ?: call.arguments as? String
         val options = try {
-            if (json.isNullOrBlank()) VpnOptions() else gson.fromJson(json, VpnOptions::class.java)
+            if (json.isNullOrBlank()) VpnOptions() else gson.fromJson(json, VpnOptions::class.java).gsonSanitized()
         } catch (e: Exception) {
             Log.w("ServicePlugin", "VpnOptions parse failed, using defaults: ${e.message}")
             VpnOptions()

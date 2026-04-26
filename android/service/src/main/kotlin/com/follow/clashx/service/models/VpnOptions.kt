@@ -30,6 +30,20 @@ data class VpnOptions(
     val excludePackage: List<String>? = null,
 ) : Parcelable
 
+@Suppress("SENSELESS_COMPARISON")
+fun VpnOptions.gsonSanitized(): VpnOptions = copy(
+    dnsServers = if (dnsServers == null) listOf("8.8.8.8", "1.1.1.1") else dnsServers,
+    routeAddress = if (routeAddress == null) emptyList() else routeAddress,
+    bypassDomain = if (bypassDomain == null) emptyList() else bypassDomain,
+    accessControl = accessControl?.gsonSanitized(),
+)
+
+@Suppress("SENSELESS_COMPARISON")
+private fun AccessControlProps.gsonSanitized(): AccessControlProps = copy(
+    acceptList = if (acceptList == null) emptyList() else acceptList,
+    rejectList = if (rejectList == null) emptyList() else rejectList,
+)
+
 fun String.toCIDR(): Pair<String, Int>? {
     val parts = split("/", limit = 2)
     if (parts.size != 2) return null

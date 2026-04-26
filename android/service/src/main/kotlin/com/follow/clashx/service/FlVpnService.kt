@@ -12,6 +12,7 @@ import com.follow.clashx.common.SavedParams
 import com.follow.clashx.core.Core
 import com.follow.clashx.core.InvokeInterface
 import com.follow.clashx.service.models.VpnOptions
+import com.follow.clashx.service.models.gsonSanitized
 import com.follow.clashx.service.models.toCIDR
 import com.follow.clashx.service.modules.NetworkObserveModule
 import com.follow.clashx.service.modules.NotificationModule
@@ -135,10 +136,10 @@ class FlVpnService : VpnService(), IBaseService {
             }
 
             val optionsJson = Core.getAndroidVpnOptions()
-            val options = if (optionsJson.isNotBlank()) {
+            val options = (if (optionsJson.isNotBlank()) {
                 runCatching { gson.fromJson(optionsJson, VpnOptions::class.java) }
                     .getOrDefault(VpnOptions())
-            } else VpnOptions()
+            } else VpnOptions()).gsonSanitized()
 
             State.options = options
             State.notificationParamsFlow.value = State.notificationParamsFlow.value.copy(

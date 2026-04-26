@@ -55,6 +55,9 @@ _$ProfileImpl _$$ProfileImplFromJson(Map<String, dynamic> json) =>
             (k, e) => MapEntry(k, e as String),
           ) ??
           const {},
+      updateMethod: $enumDecodeNullable(
+              _$UpdateMethodEnumMap, json['updateMethod']) ??
+          UpdateMethod.proxy,
     );
 
 Map<String, dynamic> _$$ProfileImplToJson(_$ProfileImpl instance) =>
@@ -71,6 +74,7 @@ Map<String, dynamic> _$$ProfileImplToJson(_$ProfileImpl instance) =>
       'unfoldSet': instance.unfoldSet.toList(),
       'overrideData': instance.overrideData,
       'providerHeaders': instance.providerHeaders,
+      'updateMethod': _$UpdateMethodEnumMap[instance.updateMethod]!,
     };
 
 _$OverrideDataImpl _$$OverrideDataImplFromJson(Map<String, dynamic> json) =>
@@ -111,4 +115,9 @@ Map<String, dynamic> _$$OverrideRuleImplToJson(_$OverrideRuleImpl instance) =>
 const _$OverrideRuleTypeEnumMap = {
   OverrideRuleType.override: 'override',
   OverrideRuleType.added: 'added',
+};
+
+const _$UpdateMethodEnumMap = {
+  UpdateMethod.proxy: 'proxy',
+  UpdateMethod.direct: 'direct',
 };

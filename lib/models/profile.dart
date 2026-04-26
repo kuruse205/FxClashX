@@ -63,6 +63,7 @@ class Profile with _$Profile {
     @Default(false)
     bool isUpdating,
     @Default({}) Map<String, String> providerHeaders,
+    @Default(UpdateMethod.proxy) UpdateMethod updateMethod,
   }) = _Profile;
 
   factory Profile.fromJson(Map<String, Object?> json) =>
@@ -183,6 +184,7 @@ extension ProfileExtension on Profile {
     final response = await request.getFileResponseForUrl(
       url,
       headers: headers.isNotEmpty ? headers : null,
+      direct: updateMethod == UpdateMethod.direct,
     );
 
     final disposition = response.headers.value("content-disposition");

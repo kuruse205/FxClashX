@@ -73,6 +73,12 @@ class _EditorPageState extends ConsumerState<EditorPage> {
         builder: (_, value, ___) => builder(value),
       );
 
+  TextStyle get _editorStyle => TextStyle(
+        fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
+        fontFamily: FontFamily.jetBrainsMono.value,
+        height: 1.5,
+      );
+
   void _toggleSearch() {
     setState(() {
       _showSearch = !_showSearch;
@@ -175,28 +181,117 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                 onClose: _toggleSearch,
               ),
             Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: _controller,
-                  maxLines: null,
-                  style: TextStyle(
-                    fontSize: context.textTheme.bodyLarge?.fontSize?.ap,
-                    fontFamily: FontFamily.jetBrainsMono.value,
-                    height: 1.5,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _LineGutter(
+                          controller: _controller,
+                          style: _editorStyle,
+                          totalWidth: constraints.maxWidth,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: TextField(
+                              controller: _controller,
+                              maxLines: null,
+                              style: _editorStyle,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LineGutter extends StatelessWidget {
+  const _LineGutter({
+    required this.controller,
+    required this.style,
+    required this.totalWidth,
+  });
+
+  final TextEditingController controller;
+  final TextStyle style;
+  final double totalWidth;
+
+  static const _padLeft = 12.0;
+  static const _padRight = 8.0;
+  static const _textPadRight = 16.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final gutterColor = context.colorScheme.onSurface.withValues(alpha: 0.38);
+    final gutterStyle = style.copyWith(color: gutterColor);
+    final textScaler = MediaQuery.textScalerOf(context);
+
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final lines = value.text.split('\n');
+        final digits = lines.length.toString().length.clamp(2, 6);
+
+        final digitPainter = TextPainter(
+          text: TextSpan(text: '0' * (digits + 1), style: gutterStyle),
+          textDirection: TextDirection.ltr,
+          textScaler: textScaler,
+        )..layout();
+        final gutterContentWidth = digitPainter.width.ceilToDouble();
+        digitPainter.dispose();
+
+        final gutterWidth = _padLeft + gutterContentWidth + _padRight;
+        final textAreaWidth = totalWidth - gutterWidth - _textPadRight;
+
+        final painter = TextPainter(
+          textDirection: TextDirection.ltr,
+          textScaler: textScaler,
+        );
+
+        final children = <Widget>[];
+        for (var i = 0; i < lines.length; i++) {
+          painter.text = TextSpan(
+            text: lines[i].isEmpty ? ' ' : lines[i],
+            style: style,
+          );
+          painter.layout(
+            maxWidth: textAreaWidth > 0 ? textAreaWidth : double.infinity,
+          );
+          children.add(SizedBox(
+            height: painter.height,
+            child: Text('${i + 1}', style: gutterStyle),
+          ));
+        }
+        painter.dispose();
+
+        return SizedBox(
+          width: gutterWidth,
+          child: Padding(
+            padding: const EdgeInsets.only(left: _padLeft, right: _padRight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: children,
+            ),
+          ),
+        );
+      },
     );
   }
 }

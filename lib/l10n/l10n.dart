@@ -724,6 +724,21 @@ class AppLocalizations {
     );
   }
 
+  /// `Update method`
+  String get updateMethod {
+    return Intl.message('Update method', name: 'updateMethod', desc: '', args: []);
+  }
+
+  /// `Via proxy`
+  String get updateMethodProxy {
+    return Intl.message('Via proxy', name: 'updateMethodProxy', desc: '', args: []);
+  }
+
+  /// `Direct`
+  String get updateMethodDirect {
+    return Intl.message('Direct', name: 'updateMethodDirect', desc: '', args: []);
+  }
+
   /// `Please enter the auto update interval time`
   String get profileAutoUpdateIntervalNullValidationDesc {
     return Intl.message(

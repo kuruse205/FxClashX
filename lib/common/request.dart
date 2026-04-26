@@ -20,6 +20,18 @@ class Request {
         },
       ),
     );
+    _directDio = Dio(
+      BaseOptions(
+        headers: {
+          "User-Agent": browserUa,
+        },
+      ),
+    );
+    _directDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
+      final client = HttpClient();
+      client.findProxy = (_) => "DIRECT";
+      return client;
+    });
     _clashDio = Dio();
     _clashDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient();
@@ -31,18 +43,22 @@ class Request {
     });
   }
   late final Dio _dio;
+  late final Dio _directDio;
   late final Dio _clashDio;
   String? userAgent;
 
   Future<Response<Uint8List>> getFileResponseForUrl(
     String rawUrl, {
     Map<String, dynamic>? headers,
+    bool direct = false,
   }) async {
     final url = rawUrl.normalizeUrlCredentials;
     final requestHeaders = headers ?? {};
     requestHeaders['User-Agent'] = globalState.ua;
 
-    final firstResponse = await _dio.get<Uint8List>(
+    final dio = direct ? _directDio : _dio;
+
+    final firstResponse = await dio.get<Uint8List>(
       url,
       options: Options(
         responseType: ResponseType.bytes,
@@ -59,7 +75,7 @@ class Request {
       }
 
       print('↪️ Redirecting to: $newUrl');
-      final finalResponse = await _dio.get<Uint8List>(
+      final finalResponse = await dio.get<Uint8List>(
         newUrl,
         options: Options(
           responseType: ResponseType.bytes,
