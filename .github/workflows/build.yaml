@@ -363,9 +363,12 @@ jobs:
       - name: Prepare commit list for notification
         id: prepare_commits
         run: |
-          # Extract first 10 commits from release.md (without the template footer)
-          commits=$(head -n 20 release.md | grep "^- " | head -n 10)
-          # Escape special characters for JSON
+          main_commit=$(git log -1 --pretty=format:"%s" ${{ github.ref_name }})
+          other_commits=$(head -n 20 release.md | grep "^- " | grep -v "^- ${main_commit}$" | head -n 9)
+          commits="• ${main_commit}"
+          if [ -n "$other_commits" ]; then
+            commits="${commits}"$'\n'"${other_commits}"
+          fi
           commits_escaped=$(echo "$commits" | jq -Rs .)
           echo "commits=$commits_escaped" >> $GITHUB_OUTPUT
 
