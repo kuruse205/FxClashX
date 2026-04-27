@@ -3424,6 +3424,16 @@ class AppLocalizations {
     return Intl.message('Expires on', name: 'expiresOn', desc: '', args: []);
   }
 
+  /// `New look`
+  String get newDashboard {
+    return Intl.message('New look', name: 'newDashboard', desc: '', args: []);
+  }
+
+  /// `until`
+  String get untilDate {
+    return Intl.message('until', name: 'untilDate', desc: '', args: []);
+  }
+
   /// `Remaining`
   String get remaining {
     return Intl.message('Remaining', name: 'remaining', desc: '', args: []);

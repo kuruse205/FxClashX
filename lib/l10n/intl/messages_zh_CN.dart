@@ -518,6 +518,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "unifiedDelayDesc": MessageLookupByLibrary.simpleMessage("去除握手等额外延迟"),
     "unknown": MessageLookupByLibrary.simpleMessage("未知"),
     "unnamed": MessageLookupByLibrary.simpleMessage("未命名"),
+    "newDashboard": MessageLookupByLibrary.simpleMessage("新外观"),
+    "untilDate": MessageLookupByLibrary.simpleMessage("至"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),
     "updateAllGeoData": MessageLookupByLibrary.simpleMessage("更新所有地理数据"),
     "upload": MessageLookupByLibrary.simpleMessage("上传"),

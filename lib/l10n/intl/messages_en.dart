@@ -271,6 +271,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "expandAll": MessageLookupByLibrary.simpleMessage("Expand all"),
     "expirationTime": MessageLookupByLibrary.simpleMessage("Expiration time"),
     "expiresOn": MessageLookupByLibrary.simpleMessage("Expires on"),
+    "newDashboard": MessageLookupByLibrary.simpleMessage("New look"),
+    "untilDate": MessageLookupByLibrary.simpleMessage("until"),
     "exportFile": MessageLookupByLibrary.simpleMessage("Export file"),
     "exportLogs": MessageLookupByLibrary.simpleMessage("Export logs"),
     "restartCore": MessageLookupByLibrary.simpleMessage("Restart core"),

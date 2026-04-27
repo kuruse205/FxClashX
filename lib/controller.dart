@@ -400,6 +400,10 @@ class AppController {
   }
 
   Future<void> updateProfile(Profile profile) async {
+    _ref.read(profilesProvider.notifier).setProfile(
+      profile.copyWith(isUpdating: true),
+    );
+    try {
     final prefs = await SharedPreferences.getInstance();
     final shouldSend = prefs.getBool('sendDeviceHeaders') ?? true;
     final newProfile = await profile.update(
@@ -408,6 +412,11 @@ class AppController {
 
     final mergedHeaders = Map<String, String>.from(profile.providerHeaders)
       ..addAll(newProfile.providerHeaders);
+    for (final key in ['announce', 'support-url']) {
+      if (!newProfile.providerHeaders.containsKey(key)) {
+        mergedHeaders.remove(key);
+      }
+    }
     final mergedProfile = newProfile.copyWith(
       providerHeaders: mergedHeaders,
       isUpdating: false,
@@ -440,6 +449,12 @@ class AppController {
         .catchError((e) {
       commonPrint.log("Error checking subscription: $e");
     }));
+    } catch (e) {
+      _ref.read(profilesProvider.notifier).setProfile(
+        profile.copyWith(isUpdating: false),
+      );
+      rethrow;
+    }
   }
 
   void _showHwidNotSupportedNotice() {

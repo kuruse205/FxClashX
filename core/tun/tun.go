@@ -55,6 +55,7 @@ func Start(fd int, cfg LC.Tun) (listener *sing_tun.Listener, err error) {
 		Inet4Address:           prefix4,
 		EndpointIndependentNat: cfg.EndpointIndependentNat,
 		UDPTimeout:             cfg.UDPTimeout,
+		DisableICMPForwarding:  cfg.DisableICMPForwarding,
 	}
 
 	listener, err = sing_tun.New(options, tunnel.Tunnel)

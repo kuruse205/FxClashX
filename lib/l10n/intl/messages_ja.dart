@@ -586,6 +586,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unknown": MessageLookupByLibrary.simpleMessage("不明"),
     "unnamed": MessageLookupByLibrary.simpleMessage("無題"),
+    "newDashboard": MessageLookupByLibrary.simpleMessage("新しい外観"),
+    "untilDate": MessageLookupByLibrary.simpleMessage("まで"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),
     "updateAllGeoData": MessageLookupByLibrary.simpleMessage("すべての地理データを更新"),
     "upload": MessageLookupByLibrary.simpleMessage("アップロード"),
