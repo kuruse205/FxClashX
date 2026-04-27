@@ -8,9 +8,7 @@ import 'package:flclashx/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'widgets/announce_widget.dart';
 import 'widgets/hero_connect.dart';
-import 'widgets/outbound_mode.dart';
 import 'widgets/start_button.dart';
 import 'widgets/stats_grid.dart';
 
