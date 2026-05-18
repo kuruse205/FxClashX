@@ -10,6 +10,7 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.platform == 'macos' && vars.ENABLE_MACOS_NOTARIZATION != 'true' }}
     strategy:
       fail-fast: false
       matrix:
