@@ -21,6 +21,8 @@ val isRelease = mStoreFile.exists()
         && mStorePassword != null
         && mKeyAlias != null
         && mKeyPassword != null
+val applicationIdOverride = providers.gradleProperty("applicationIdOverride").orNull
+val appLabelOverride = providers.gradleProperty("appLabelOverride").orNull
 
 android {
     namespace = "com.follow.clashx"
@@ -38,11 +40,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.follow.clashx"
+        applicationId = applicationIdOverride ?: "com.fxclashx.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["appLabel"] = appLabelOverride ?: "FxClashX"
     }
 
     signingConfigs {
@@ -65,6 +68,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
         }
 
         release {

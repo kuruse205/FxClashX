@@ -71,12 +71,13 @@ class Profile with _$Profile {
   factory Profile.normal({
     String? label,
     String url = '',
-  }) => Profile(
-      label: label,
-      url: url,
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      autoUpdateDuration: defaultUpdateDuration,
-    );
+  }) =>
+      Profile(
+        label: label,
+        url: url,
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        autoUpdateDuration: defaultUpdateDuration,
+      );
 }
 
 @freezed
@@ -187,35 +188,14 @@ extension ProfileExtension on Profile {
 
     final disposition = response.headers.value("content-disposition");
     final userinfo = response.headers.value('subscription-userinfo');
-    
+
     final responseData = response.data;
     if (responseData == null) {
       throw Exception("Failed to get profile data from response.");
     }
 
-    final providerHeaders = <String, String>{};
-    
-    final headersToCollect = [
-      'announce',
-      'support-url', 
-      'profile-update-interval',
-      'x-hwid-max-devices-reached',
-      'x-hwid-not-supported',
-    ];
-    
-    for (final headerName in headersToCollect) {
-      final value = response.headers.value(headerName);
-      if (value != null && value.isNotEmpty) {
-        providerHeaders[headerName] = value;
-      }
-    }
-    
-    response.headers.forEach((name, values) {
-      if (name.toLowerCase().startsWith('flclashx-') && values.isNotEmpty) {
-        providerHeaders[name.toLowerCase()] = values.first;
-      }
-    });
-    
+    final providerHeaders = collectProviderHeaders(response.headers);
+
     Duration? durationFromHeader;
     final updateIntervalHeader = providerHeaders['profile-update-interval'];
     if (updateIntervalHeader != null) {
@@ -225,14 +205,10 @@ extension ProfileExtension on Profile {
       }
     }
 
-    String updatedUrl = url;
-    final newDomain = providerHeaders['flclashx-newdomain'];
-    if (newDomain != null && newDomain.isNotEmpty) {
-      final currentUri = Uri.tryParse(url);
-      if (currentUri != null && currentUri.host != newDomain) {
-        updatedUrl = currentUri.replace(host: newDomain).toString();
-      }
-    }
+    final updatedUrl = applySubscriptionDomainRedirect(
+      currentUrl: url,
+      providerHeaders: providerHeaders,
+    );
 
     return copyWith(
       url: updatedUrl,

@@ -117,7 +117,8 @@ class AppController {
       }
     }
 
-    commonPrint.log('[initForegroundCache] profileName="$profileName" serviceName="$serviceName" selectedMap=${profile.selectedMap}');
+    commonPrint.log(
+        '[initForegroundCache] profileName="$profileName" serviceName="$serviceName" selectedMap=${profile.selectedMap}');
     vpn?.updateProfileInfo(
       profileName: profileName,
       serviceName: serviceName,
@@ -416,58 +417,53 @@ class AppController {
 
   Future<void> updateProfile(Profile profile) async {
     _ref.read(profilesProvider.notifier).setProfile(
-      profile.copyWith(isUpdating: true),
-    );
+          profile.copyWith(isUpdating: true),
+        );
     try {
-    final prefs = await SharedPreferences.getInstance();
-    final shouldSend = prefs.getBool('sendDeviceHeaders') ?? true;
-    final newProfile = await profile.update(
-      shouldSendHeaders: shouldSend,
-    );
+      final prefs = await SharedPreferences.getInstance();
+      final shouldSend = prefs.getBool('sendDeviceHeaders') ?? true;
+      final newProfile = await profile.update(
+        shouldSendHeaders: shouldSend,
+      );
 
-    final mergedHeaders = Map<String, String>.from(profile.providerHeaders)
-      ..addAll(newProfile.providerHeaders);
-    for (final key in ['announce', 'support-url']) {
-      if (!newProfile.providerHeaders.containsKey(key)) {
-        mergedHeaders.remove(key);
+      final mergedHeaders = mergeProviderHeaders(
+        previousHeaders: profile.providerHeaders,
+        responseHeaders: newProfile.providerHeaders,
+      );
+      final mergedProfile = newProfile.copyWith(
+        providerHeaders: mergedHeaders,
+        isUpdating: false,
+      );
+
+      if (mergedHeaders.isNotEmpty) {
+        _applyAllHeaderSettings(mergedProfile, isNewProfile: false);
       }
-    }
-    final mergedProfile = newProfile.copyWith(
-      providerHeaders: mergedHeaders,
-      isUpdating: false,
-    );
 
-    if (mergedHeaders.isNotEmpty) {
-      _applyAllHeaderSettings(mergedProfile, isNewProfile: false);
-    }
+      final showHwidLimit = isHwidLimitReached(mergedHeaders);
+      final announceText = mergedHeaders['announce'];
+      if (showHwidLimit && announceText != null && announceText.isNotEmpty) {
+        _showHwidLimitNotice(announceText, mergedHeaders['support-url']);
+      }
 
-    final showHwidLimit = mergedHeaders['x-hwid-max-devices-reached']?.toLowerCase() == 'true';
-    final announceText = mergedHeaders['announce'];
-    if (showHwidLimit && announceText != null && announceText.isNotEmpty) {
-      _showHwidLimitNotice(announceText, mergedHeaders['support-url']);
-    }
+      if (isHwidNotSupported(mergedHeaders)) {
+        _showHwidNotSupportedNotice();
+      }
 
-    if (mergedHeaders['x-hwid-not-supported']?.toLowerCase() == 'true') {
-      _showHwidNotSupportedNotice();
-    }
+      _ref.read(profilesProvider.notifier).setProfile(mergedProfile);
 
-    _ref
-        .read(profilesProvider.notifier)
-        .setProfile(mergedProfile);
+      if (profile.id == _ref.read(currentProfileIdProvider)) {
+        applyProfileDebounce(silence: true);
+      }
 
-    if (profile.id == _ref.read(currentProfileIdProvider)) {
-      applyProfileDebounce(silence: true);
-    }
-
-    // Check subscription expiration and show notification if needed
-    unawaited(SubscriptionNotificationService.checkAndNotify(newProfile)
-        .catchError((e) {
-      commonPrint.log("Error checking subscription: $e");
-    }));
+      // Check subscription expiration and show notification if needed
+      unawaited(SubscriptionNotificationService.checkAndNotify(mergedProfile)
+          .catchError((e) {
+        commonPrint.log("Error checking subscription: $e");
+      }));
     } catch (e) {
       _ref.read(profilesProvider.notifier).setProfile(
-        profile.copyWith(isUpdating: false),
-      );
+            profile.copyWith(isUpdating: false),
+          );
       rethrow;
     }
   }
@@ -756,7 +752,6 @@ class AppController {
     _ref.read(requestsProvider.notifier).value = FixedList(500);
     globalState.cacheHeightMap = {};
     globalState.cacheScrollPosition = {};
-
   }
 
   void updateBrightness(Brightness brightness) {
@@ -1280,12 +1275,12 @@ class AppController {
         _applyAllHeaderSettings(profile, isNewProfile: true);
 
         final headers = profile.providerHeaders;
-        final showHwidLimit = headers['x-hwid-max-devices-reached']?.toLowerCase() == 'true';
+        final showHwidLimit = isHwidLimitReached(headers);
         final announceText = headers['announce'];
         if (showHwidLimit && announceText != null && announceText.isNotEmpty) {
           _showHwidLimitNotice(announceText, headers['support-url']);
         }
-        if (headers['x-hwid-not-supported']?.toLowerCase() == 'true') {
+        if (isHwidNotSupported(headers)) {
           _showHwidNotSupportedNotice();
         }
 
