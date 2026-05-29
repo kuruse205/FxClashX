@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
 
 
 val KClass<*>.intent: Intent
-    get() = Intent().setClassName(Components.PACKAGE_NAME, java.name)
+    get() = Intent().setClassName(Components.applicationPackageName, java.name)
 
 
 fun Context.registerReceiverCompat(
@@ -40,14 +40,14 @@ fun Context.receiveBroadcastFlow(vararg actions: String): Flow<Intent> = callbac
             if (intent != null) trySend(intent)
         }
     }
-    registerReceiverCompat(receiver, filter, "${Components.PACKAGE_NAME}.permission.RECEIVE_BROADCASTS")
+    registerReceiverCompat(receiver, filter, "${packageName}.permission.RECEIVE_BROADCASTS")
     awaitClose { runCatching { unregisterReceiver(receiver) } }
 }
 
 fun Context.sendInternalBroadcast(action: String) {
     sendBroadcast(
-        Intent(action).setPackage(Components.PACKAGE_NAME),
-        "${Components.PACKAGE_NAME}.permission.RECEIVE_BROADCASTS",
+        Intent(action).setPackage(packageName),
+        "${packageName}.permission.RECEIVE_BROADCASTS",
     )
 }
 

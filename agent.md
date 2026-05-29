@@ -8,7 +8,7 @@ This is the fast entry point for future agents. For full details, read `.agent/M
 
 - Branch: `main`.
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
-- Current pushed commit: `13c699a chore(release): rename product artifacts to FxClashX`.
+- Current pushed commit: latest `main` after the Android runtime package fix.
 - `main` already includes the upstream-safe work from `fx/upstream-dev-safe`.
 - The working tree was clean after push except the pre-existing untracked `.claude/` directory.
 
@@ -25,7 +25,7 @@ This is the fast entry point for future agents. For full details, read `.agent/M
 
 ## Latest Android Build
 
-Built on Windows from `main` after product rename:
+Built on Windows from `main` after fixing Android runtime service package resolution:
 
 - `dist/FxClashX-android-arm64-v8a.apk`
 - `dist/FxClashX-android-armeabi-v7a.apk`
@@ -40,6 +40,17 @@ $env:ANDROID_NDK='C:\Users\Erik\Android\Sdk\ndk\28.0.13004108'
 dart.bat setup.dart android
 ```
 
+Device validation on 2026-05-30:
+
+- Installed `dist/FxClashX-android-arm64-v8a.apk` on ADB device `M2101K9AG`.
+- Before fix, `logcat` showed `Unable to start service Intent { cmp=com.follow.clashx/.service.RemoteService } U=0: not found`.
+- Cause: after the public Android `applicationId` changed to `com.fxclashx.app`, common Android code still built explicit service intents with old package `com.follow.clashx`.
+- Fix: keep `com.follow.clashx` as compatibility namespace for classes/channels/actions, but use the runtime `application.packageName` / `Context.packageName` for Android component packages and internal broadcast permissions.
+- After fix, `logcat` showed `Load .../lib/arm64/libcore.so ... ok` and `RemoteService created`.
+- Compared against `pluralplay/FlClashX`: our `main` already contains upstream `dev` at `b4ae2ac` (`v0.4.0-pre.12`), including the new dashboard files.
+- The new dashboard was present but upstream kept it opt-in via nullable `newDashboard` / `flclashx-newboard`; FxClashX now defaults `newDashboard` to `true` so users see the updated interface by default.
+- Final device screenshot check showed the new dashboard on `Главная` without requiring a provider header.
+
 Local toolchain confirmed:
 
 - Flutter `3.41.9` stable at `C:\Users\Erik\devdeps\flutter\bin\flutter.bat`.
@@ -52,4 +63,5 @@ Local toolchain confirmed:
 - Never record secrets or signing material.
 - Do not weaken Android runtime security sanitizer.
 - Do not mass-rename package identifiers without an explicit migration/release plan.
+- Do not reintroduce hardcoded `com.follow.clashx` as an Android component package while `applicationId` is `com.fxclashx.app`; use runtime package name for explicit intents.
 - Update `agent.md`, `agent/`, and `.agent/` after meaningful work.

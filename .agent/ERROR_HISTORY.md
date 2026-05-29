@@ -118,3 +118,37 @@ Do not change shared code before isolating platform-specific failure.
 
 Status:
 verify-live-first
+
+## 8. Android RemoteService not found after applicationId rename
+
+Symptoms:
+On Android startup, app UI opens but core/service bridge does not start. `logcat` shows `Unable to start service Intent { cmp=com.follow.clashx/.service.RemoteService } U=0: not found` and service crash/retry messages.
+
+Meaning:
+The Android `applicationId` is `com.fxclashx.app`, while common service intent code used old package `com.follow.clashx` as the explicit component package. Kotlin/namespace classes still live under `com.follow.clashx`, but Android component package must be the installed app package.
+
+Correct diagnostic:
+Check `adb shell dumpsys package com.fxclashx.app`, `cmd package resolve-activity`, and `logcat` for `RemoteService` component names. Verify final component is `com.fxclashx.app/com.follow.clashx.service.RemoteService`.
+
+Wrong fix:
+Do not mass-rename Kotlin packages or Dart channels. Keep `com.follow.clashx` compatibility namespace for classes/channels/actions, and use runtime `application.packageName` / `Context.packageName` only where Android needs the installed package id.
+
+Status:
+fixed-2026-05-30
+
+## 9. Upstream new dashboard exists but does not appear by default
+
+Symptoms:
+User expects the updated upstream dashboard/interface, but the app still opens the old widget grid.
+
+Meaning:
+The upstream `dev` dashboard files may already be present, but upstream gated the new dashboard behind nullable `AppSettingProps.newDashboard` or provider header `flclashx-newboard: true`.
+
+Correct diagnostic:
+Compare against `upstream/dev` with `git diff main upstream/dev -- lib/views/dashboard lib/views/theme.dart lib/pages/home.dart lib/models/config.dart`. Then check whether `newDashboard` defaults to true and whether existing config stores an explicit false.
+
+Wrong fix:
+Do not re-merge upstream blindly if `upstream/dev` is already an ancestor. Enable the intended default or migrate config while preserving the user's ability to disable the new view.
+
+Status:
+fixed-2026-05-30

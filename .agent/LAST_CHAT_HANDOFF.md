@@ -1,41 +1,39 @@
 # Last Chat Handoff
 
-User intent: treat this fork as the real product for users. Product-visible name and GitHub-facing release naming should be `FxClashX`.
+User intent: install the GitHub-current Android arm64 APK on the connected phone, diagnose why the core did not start after launch, fix it, update memory, push to GitHub, and rebuild APKs for users.
 
-Current git state after the last completed release-name work:
+Completed in this session:
 
-- Branch: `main`.
-- Origin: `https://github.com/kuruse205/FxClashX.git`.
-- Current pushed commit: `13c699a chore(release): rename product artifacts to FxClashX`.
-- Working tree was clean except pre-existing untracked `.claude/`.
+- Installed `dist/FxClashX-android-arm64-v8a.apk` on ADB device `M2101K9AG`.
+- Reproduced the startup failure in `logcat`.
+- Root cause: Android app id is `com.fxclashx.app`, but common code built explicit `RemoteService` intents with old package `com.follow.clashx`. Android therefore looked for `com.follow.clashx/.service.RemoteService`, which is not installed.
+- Fixed Android common code so component packages and internal broadcast permissions use runtime package name, while `com.follow.clashx` remains the compatibility namespace for Kotlin classes, Dart channels, and action names.
+- Verified final arm64 APK on device: `libcore.so` loads and `RemoteService created` appears in `logcat`.
+- Compared with `pluralplay/FlClashX`: our `main` already includes current `upstream/dev` (`b4ae2ac`, `v0.4.0-pre.12`) and its new dashboard files.
+- Found why the UI looked old: upstream made the new dashboard opt-in. FxClashX now defaults `AppSettingProps.newDashboard` to `true`, while the "New look" / "Новый вид" setting can still turn it off.
+- Verified by ADB screenshot that `Главная` shows the new dashboard by default.
+- Rebuilt all Android APKs into `dist/`.
 
-Completed:
+Validation completed:
 
-- Bootstrapped project memory in `AGENTS.md` and `.agent/`.
-- Merged `fx/upstream-dev-safe` into `main`.
-- Removed stale tracked files left by the unrelated-history merge.
-- Renamed product-visible names, GitHub release links, release templates, and artifact prefixes to `FxClashX`.
-- Rebuilt Android APKs from `main`; outputs are `dist/FxClashX-android-*.apk`.
-- Added compatibility memory entry points: `agent.md` and `agent/`.
+- `flutter.bat build apk --debug`
+- `flutter.bat test test\runtime_config_security_sanitizer_test.dart`
+- `dart.bat setup.dart android`
+- `adb install -r -d .\dist\FxClashX-android-arm64-v8a.apk`
+- Device `logcat` final check: no old `com.follow.clashx/.service.RemoteService not found` failure in the checked window.
+- Device screenshot final check: new dashboard visible on `Главная`.
 
-Latest local Android build:
+Latest Android artifacts:
 
-- Flutter `3.41.9` stable, Dart `3.11.5`.
-- Android NDK `C:\Users\Erik\Android\Sdk\ndk\28.0.13004108`.
-- Command: `dart.bat setup.dart android`.
-- Artifact details and hashes: see `.agent/RELEASE_STATE.md` and `agent/BUILD_ARTIFACTS.md`.
+- `dist/FxClashX-android-arm64-v8a.apk`
+- `dist/FxClashX-android-armeabi-v7a.apk`
+- `dist/FxClashX-android-x86_64.apk`
+- `dist/FxClashX-android-universal.apk`
 
-Intentional compatibility left unchanged:
+Keep in mind:
 
-- Dart package/import name `flclashx`.
-- Android namespace/internal package `com.follow.clashx`.
-- Kotlin class names such as `FlClashXApplication` and `FlClashXTileService`.
-- Subscription provider header prefix `flclashx-*`.
-- Android migration cleanup for old notification channel `FlClashX_Core`.
-
-Needs live verification later:
-
-- Real Android VPN behavior on device/emulator.
-- Remnawave panel compatibility.
-- FFI generation path.
-- Signing ownership and official release artifact signing/notarization.
+- Do not mass-rename `com.follow.clashx`; it is still the Kotlin namespace and channel/action compatibility namespace.
+- For Android component package names, use runtime `application.packageName` / `Context.packageName`.
+- Do not assume missing new UI means upstream is absent; first check `newDashboard` config/default and provider header behavior.
+- Public product name and release artifact prefix remain `FxClashX`.
+- Pre-existing untracked `.claude/` is unrelated.

@@ -379,7 +379,7 @@ class _$AppSettingPropsImpl implements _AppSettingProps {
       this.overrideProviderSettings = false,
       this.overrideNetworkSettings = false,
       this.recoveryStrategy = RecoveryStrategy.compatible,
-      this.newDashboard})
+      this.newDashboard = true})
       : _dashboardWidgets = dashboardWidgets;
 
   factory _$AppSettingPropsImpl.fromJson(Map<String, dynamic> json) =>

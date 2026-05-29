@@ -17,6 +17,9 @@ object GlobalState {
     lateinit var application: Application
         private set
 
+    val hasApplication: Boolean
+        get() = ::application.isInitialized
+
     val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun init(app: Application) {

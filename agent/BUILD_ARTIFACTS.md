@@ -1,6 +1,6 @@
 # Build Artifacts
 
-Last Android release build: 2026-05-30 from `main` at commit `13c699a`.
+Last Android release build: 2026-05-30 from `main` after Android service package and default dashboard fixes.
 
 Command:
 
@@ -21,9 +21,9 @@ Generated APKs in `dist/`:
 
 | File | Size bytes | SHA256 |
 | --- | ---: | --- |
-| `FxClashX-android-arm64-v8a.apk` | 53615740 | `a0872b325cd597258449234a2a51dd5eab41d9eb4763b10301ab608b4f63f30a` |
-| `FxClashX-android-armeabi-v7a.apk` | 53682358 | `7b34329f87cda61ae317cdd8237ef0eb3d541f8971d337754c537930242a4f1e` |
-| `FxClashX-android-universal.apk` | 117433937 | `ca4c54f1a55227f685f259f83c1efed61aac839dee9610b80d2a28ce88ca2fe2` |
-| `FxClashX-android-x86_64.apk` | 55747625 | `ffc39f80333322951d751e12072ef9e9b3aca06bbea9cd2c5eddf97ba1f60b39` |
+| `FxClashX-android-arm64-v8a.apk` | 53615692 | `c230dcd0c42b16a62a4397d30b87e74009c42d8ef756e15d1611faa22771e436` |
+| `FxClashX-android-armeabi-v7a.apk` | 53682226 | `557cb5c4e2b2c88acb3532cc12f02af603766243b048e6edff2797676cea88c3` |
+| `FxClashX-android-universal.apk` | 117433977 | `62b14e00ce6f66a62e8112dc244baaab1fbb0eed1ceba9dd3debbf034f507dfa` |
+| `FxClashX-android-x86_64.apk` | 55747633 | `133117cdc1a447ff984740830512a4362680fce0f40b319df108242b687f43c3` |
 
-Old `FlClashX-android-*.apk` files were removed from `dist/` before this build.
+Final arm64 APK was installed on ADB device `M2101K9AG`; `libcore.so` loaded, `RemoteService created` appeared, and the new dashboard appeared by default.

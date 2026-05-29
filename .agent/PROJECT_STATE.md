@@ -15,6 +15,7 @@ FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, Cl
 - Public release artifact prefix: `FxClashX`.
 - Android namespace: `com.follow.clashx`.
 - Android default applicationId: `com.fxclashx.app`, overridable by Gradle property `applicationIdOverride`.
+- Android component package names must resolve from runtime `application.packageName` / `Context.packageName`; `com.follow.clashx` remains the Kotlin/class/channel compatibility namespace, not the installed package id.
 - Android default label: `FxClashX`, overridable by Gradle property `appLabelOverride`.
 - macOS bundle id: `com.follow.clash`.
 - Windows binary/project name: `FxClashX`.
@@ -66,6 +67,7 @@ FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, Cl
 - Remote/core process entry is `RemoteService` in Android `:remote` process.
 - Flutter-to-Android bridge is `lib/clash/lib.dart` through MethodChannel `com.follow.clashx/service`.
 - Android actions in README and manifest include start, stop, and change actions under the application id.
+- Android common component intent helper now uses runtime `application.packageName` so `RemoteService` resolves as `com.fxclashx.app/com.follow.clashx.service.RemoteService` for the default app id.
 - `lib/common/runtime_config_security_sanitizer.dart` enforces Android runtime safety:
   - `allow-lan = false`
   - `bind-address = 127.0.0.1`
@@ -92,6 +94,7 @@ FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, Cl
 
 - Dashboard widgets live under `lib/views/dashboard/widgets/`.
 - Confirmed widgets include announce, metainfo, service info, change server button, hero connect, network speed, traffic usage, quick options, and others.
+- The upstream new dashboard view is present and FxClashX defaults `AppSettingProps.newDashboard` to `true`; users can still turn it off with the "New look" / "Новый вид" setting.
 - Provider headers drive dashboard/proxy customization in `lib/controller.dart`, `lib/providers/state.dart`, and dashboard widget files.
 - Android home-screen widgets are in `android/app/src/main/kotlin/com/follow/clashx/widgets/` with XML layouts/resources under `android/app/src/main/res/`.
 - Android quick settings tile is `FlClashXTileService`.
@@ -109,6 +112,7 @@ FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, Cl
 - Local Flutter version confirmed: `3.41.9` stable with Dart `3.11.5`.
 - Local Android NDK used successfully: `C:\Users\Erik\Android\Sdk\ndk\28.0.13004108`.
 - Latest local Android build generated `dist/FxClashX-android-*.apk`; see `RELEASE_STATE.md`.
+- Final arm64 APK was installed on ADB device `M2101K9AG` and verified to load `libcore.so` and create `RemoteService`.
 - Makefile shortcuts include Android ARM64, Android app, macOS ARM64, core-only targets, local macOS builds, notarization, and clean.
 - CI release workflow: `.github/workflows/build.yaml`, tag-triggered on `v*`.
 - CI core workflow: `.github/workflows/build-core.yaml`, manual input `version`.

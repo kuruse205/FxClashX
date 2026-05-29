@@ -83,7 +83,7 @@ class AppSettingProps with _$AppSettingProps {
     @Default(false) bool overrideProviderSettings,
     @Default(false) bool overrideNetworkSettings,
     @Default(RecoveryStrategy.compatible) RecoveryStrategy recoveryStrategy,
-    bool? newDashboard,
+    @Default(true) bool? newDashboard,
   }) = _AppSettingProps;
 
   factory AppSettingProps.fromJson(Map<String, Object?> json) =>
