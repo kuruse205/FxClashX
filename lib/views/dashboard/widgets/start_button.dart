@@ -1,6 +1,5 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flclashx/common/common.dart';
+import 'package:flclashx/enum/enum.dart';
 import 'package:flclashx/providers/providers.dart';
 import 'package:flclashx/state.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +19,6 @@ class _StartButtonState extends ConsumerState<StartButton>
   late Animation<double> _animation;
   late Animation<double> _scaleAnimation;
   bool isStart = false;
-  bool _isSwitching = false;
 
   @override
   void initState() {
@@ -33,7 +31,7 @@ class _StartButtonState extends ConsumerState<StartButton>
     );
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutBack,
     );
 
     _pressController = AnimationController(
@@ -66,23 +64,16 @@ class _StartButtonState extends ConsumerState<StartButton>
     super.dispose();
   }
 
-  Future<void> handleSwitchStart() async {
-    if (_isSwitching) {
-      return;
-    }
-    _isSwitching = true;
-    final nextIsStart = !isStart;
-    isStart = nextIsStart;
+  void handleSwitchStart() {
+    isStart = !isStart;
     updateController();
-    try {
-      await globalState.appController.updateStatus(nextIsStart);
-    } catch (_) {
-      isStart = !nextIsStart;
-      updateController();
-      rethrow;
-    } finally {
-      _isSwitching = false;
-    }
+    debouncer.call(
+      FunctionTag.updateStatus,
+      () {
+        globalState.appController.updateStatus(isStart);
+      },
+      duration: commonDuration,
+    );
   }
 
   void updateController() {
@@ -116,22 +107,13 @@ class _StartButtonState extends ConsumerState<StartButton>
 
     final colorScheme = Theme.of(context).colorScheme;
     final activeColor = Colors.green.shade600.withValues(alpha: 0.9);
-    final inactiveColor =
-        colorScheme.secondaryContainer.withValues(alpha: 0.85);
+    final inactiveColor = colorScheme.secondaryContainer.withValues(alpha: 0.85);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: AnimatedBuilder(
         animation: Listenable.merge([_controller, _pressController]),
-        builder: (_, child) {
-          final progress = _animation.value;
-          final foregroundColor = Color.lerp(
-            colorScheme.onSecondaryContainer,
-            Colors.white,
-            progress,
-          )!;
-
-          return Transform.scale(
+        builder: (_, child) => Transform.scale(
             scale: _scaleAnimation.value,
             child: SizedBox(
               width: double.infinity,
@@ -143,75 +125,88 @@ class _StartButtonState extends ConsumerState<StartButton>
                 child: FilledButton(
                   onPressed: handleSwitchStart,
                   style: FilledButton.styleFrom(
-                    backgroundColor:
-                        Color.lerp(inactiveColor, activeColor, progress),
-                    foregroundColor: foregroundColor,
+                    backgroundColor: isStart ? activeColor : inactiveColor,
+                    foregroundColor: isStart
+                        ? Colors.white
+                        : colorScheme.onSecondaryContainer,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 4 * progress,
+                    elevation: isStart ? 4 : 0,
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Opacity(
-                        opacity: (1 - progress).clamp(0, 1),
-                        child: AnimatedIcon(
-                          icon: AnimatedIcons.play_pause,
-                          progress: _animation,
-                          size: 36,
-                          color: foregroundColor,
-                        ),
-                      ),
-                      Opacity(
-                        opacity: progress.clamp(0, 1),
-                        child: Transform.translate(
-                          offset: const Offset(-8, 0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedIcon(
-                                icon: AnimatedIcons.play_pause,
-                                progress: _animation,
-                                size: 36,
-                                color: foregroundColor,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 12),
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 160),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: child,
-                                  ),
-                                ),
-                              ),
-                            ],
+                  child: Center(
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedIcon(
+                            icon: AnimatedIcons.play_pause,
+                            progress: _animation,
+                            size: 36,
+                            color: isStart
+                                ? Colors.white
+                                : colorScheme.onSecondaryContainer,
                           ),
-                        ),
+                          if (child != null) ...[
+                            const SizedBox(width: 12),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (childWidget, animation) {
+                                final offsetAnimation = Tween<Offset>(
+                                  begin: const Offset(0, 0.3),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                ));
+
+                                return SlideTransition(
+                                  position: offsetAnimation,
+                                  child: FadeTransition(
+                                    opacity: animation,
+                                    child: childWidget,
+                                  ),
+                                );
+                              },
+                              layoutBuilder: (currentChild, previousChildren) => Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    ...previousChildren,
+                                    if (currentChild != null) currentChild,
+                                  ],
+                                ),
+                              child: child,
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          );
-        },
+          ),
         child: Consumer(
           builder: (_, ref, __) {
             final runTime = ref.watch(runTimeProvider);
-            final text = utils.getTimeText(runTime);
-            return Text(
-              text,
-              maxLines: 1,
-              softWrap: false,
-              textAlign: TextAlign.center,
-              style: context.textTheme.titleMedium?.toSoftBold.copyWith(
-                color: Colors.white,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            );
+            if (runTime != null) {
+              final text = utils.getTimeText(runTime);
+              return Text(
+                text,
+                key: ValueKey('time_$text'),
+                style: context.textTheme.titleMedium?.toSoftBold.copyWith(
+                  color: Colors.white,
+                ),
+              );
+            } else {
+              return const SizedBox.shrink(
+                key: ValueKey('empty'),
+              );
+            }
           },
         ),
       ),
