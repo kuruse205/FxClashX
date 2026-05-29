@@ -1,14 +1,14 @@
-display_name: FlClashX
+display_name: FxClashX
 
 icon: ./assets/images/icon.png
 
 keywords:
-  - FlClashX
+  - FxClashX
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: FlClashX
+generic_name: FxClashX
 
 categories:
   - Network

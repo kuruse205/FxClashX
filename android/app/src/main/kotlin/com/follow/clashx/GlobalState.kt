@@ -30,8 +30,8 @@ enum class RunState { START, PENDING, STOP }
 object GlobalState {
     private const val TAG = "GlobalState"
 
-    const val NOTIFICATION_CHANNEL = "FlClashX"
-    const val SUBSCRIPTION_NOTIFICATION_CHANNEL = "FlClashX_Subscription"
+    const val NOTIFICATION_CHANNEL = "FxClashX"
+    const val SUBSCRIPTION_NOTIFICATION_CHANNEL = "FxClashX_Subscription"
     const val NOTIFICATION_ID = 1
     const val SUBSCRIPTION_NOTIFICATION_ID = 2
 

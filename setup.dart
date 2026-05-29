@@ -131,7 +131,7 @@ class Build {
         ),
       ];
 
-  static String get appName => "FlClashX";
+  static String get appName => "FxClashX";
 
   static String get coreName => "FlClashCore";
 
@@ -609,7 +609,7 @@ class BuildCommand extends Command {
           .replaceAll("{{APP_VERSION}}", version)
           .replaceAll("{{DISPLAY_NAME}}", Build.appName)
           .replaceAll("{{PUBLISHER_NAME}}", "pluralplay")
-          .replaceAll("{{PUBLISHER_URL}}", "https://github.com/pluralplay/FlClashX")
+          .replaceAll("{{PUBLISHER_URL}}", "https://github.com/kuruse205/FxClashX")
           .replaceAll("{{INSTALL_DIR_NAME}}", "{autopf}\\${Build.appName}")
           .replaceAll("{{OUTPUT_BASE_FILENAME}}", "${Build.appName}-windows-$archName-setup")
           .replaceAll("{{SETUP_ICON_FILE}}", join(current, "windows", "runner", "resources", "app_icon.ico"))
@@ -716,7 +716,7 @@ class BuildCommand extends Command {
       "Icon=$appName\n"
       "Terminal=false\n"
       "Categories=Network;\n"
-      "Keywords=FlClashX;Clash;Proxy;\n"
+      "Keywords=FxClashX;Clash;Proxy;\n"
       "StartupNotify=true\n",
     );
     File(join(debControlDir, "control")).writeAsStringSync(
@@ -755,7 +755,7 @@ class BuildCommand extends Command {
         "Icon=$appName\n"
         "Terminal=false\n"
         "Categories=Network;\n"
-        "Keywords=FlClashX;Clash;Proxy;\n"
+        "Keywords=FxClashX;Clash;Proxy;\n"
         "StartupNotify=true\n",
       );
 
@@ -839,7 +839,7 @@ class BuildCommand extends Command {
         "Icon=$appName\n"
         "Terminal=false\n"
         "Categories=Network;\n"
-        "Keywords=FlClashX;Clash;Proxy;\n"
+        "Keywords=FxClashX;Clash;Proxy;\n"
         "StartupNotify=true\n",
       );
       Build.copyFile(join(appShareDesktop, "com.follow.clashx.desktop"), join(appDir, "com.follow.clashx.desktop"));

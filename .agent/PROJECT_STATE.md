@@ -10,12 +10,12 @@ FxClashX/FlClashX is a Flutter/Dart multi-platform proxy client fork of FlClash 
 
 - Pub package: `flclashx` in `pubspec.yaml`.
 - Pub version: `0.4.0+2026012301`.
-- Shared app constant: `FlClashX` in `lib/common/constant.dart`.
+- Shared app constant: `FxClashX` in `lib/common/constant.dart`.
 - Android namespace: `com.follow.clashx`.
 - Android default applicationId: `com.fxclashx.app`, overridable by Gradle property `applicationIdOverride`.
 - Android default label: `FxClashX`, overridable by Gradle property `appLabelOverride`.
 - macOS bundle id: `com.follow.clash`.
-- Windows binary/project name: `FlClashX`.
+- Windows binary/project name: `FxClashX`.
 
 ## SDK And Stack
 

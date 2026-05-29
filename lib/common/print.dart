@@ -24,7 +24,7 @@ class CommonPrint {
   };
 
   void log(String? text) {
-    final payload = "[FlClashX] $text";
+    final payload = "[FxClashX] $text";
     debugPrint(payload);
 
     fileLogger.log(payload);

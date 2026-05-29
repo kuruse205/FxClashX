@@ -53,9 +53,9 @@ class FileLogger {
 
   String _getLogFileName(String date, {int index = 0}) {
     if (index == 0) {
-      return 'FlClashX_$date.log';
+      return 'FxClashX_$date.log';
     }
-    return 'FlClashX_$date\_$index.log';
+    return 'FxClashX_$date\_$index.log';
   }
 
   Future<void> _rotateLogs() async {

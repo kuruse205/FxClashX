@@ -2,8 +2,8 @@
 
 Only links found in the repository are listed.
 
-- FxClashX repo/releases: `https://github.com/pluralplay/FlClashX/releases`
-- FxClashX issue search: `https://github.com/pluralplay/FlClashX/issues?q=is%3Aissue`
+- FxClashX repo/releases: `https://github.com/kuruse205/FxClashX/releases`
+- FxClashX issue search: `https://github.com/kuruse205/FxClashX/issues?q=is%3Aissue`
 - Upstream FlClash reference: `https://github.com/chen08209/FlClash`
 - Remnawave Panel: `https://github.com/remnawave/panel`
 - Mihomo rules data: `https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/`

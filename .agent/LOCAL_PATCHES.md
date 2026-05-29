@@ -15,7 +15,7 @@ Confirmed fork/custom behavior:
 
 Potential drift/conflict areas:
 
-- README names and code names mix FxClashX and FlClashX.
+- Visible product and release artifact naming was normalized to FxClashX; compatibility identifiers may still use flclashx/FlClashX where required.
 - README.md appears to contain mojibake text in the current workspace.
 - `pubspec.yaml` ffigen header path does not match the observed `libclash/android/includes/<ABI>/libclash.h` layout.
 - `lib/clash/generated/clash_ffi.dart` is configured but not present.
