@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup macOS Signing Certificate
-        if: matrix.platform == 'macos'
+        if: matrix.platform == 'macos' && env.IS_STABLE == 'true'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -127,7 +127,7 @@ jobs:
         run: flutter pub get
 
       - name: Setup Xcode Signing Configuration
-        if: matrix.platform == 'macos'
+        if: matrix.platform == 'macos' && env.IS_STABLE == 'true'
         env:
           APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -171,7 +171,7 @@ jobs:
 
   sign-macos:
     needs: [build]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
     strategy:
       matrix:
         include:

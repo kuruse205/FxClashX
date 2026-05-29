@@ -159,3 +159,19 @@ Completed locally; ready to push.
 
 Rollback:
 Set `AppSettingProps.newDashboard` default back to nullable/no default and update generated files, then rebuild APKs. This will make the new dashboard opt-in again.
+
+## 2026-05-30 - Trigger GitHub Release APK Build
+
+Goal:
+Push current `main` and rebuild Android APK files in GitHub Releases.
+
+Actions:
+
+- Confirmed `main` was pushed at `504673e`.
+- Pushed tag `v0.4.0-fx.5` to trigger `.github/workflows/build.yaml`.
+- Observed run `26662247461`.
+- Found pre-release build was blocked by macOS signing setup because Apple signing secrets were empty.
+- Updated release workflow so macOS signing certificate setup, Xcode signing config, and reusable macOS notarization only run for stable tags; pre-release tags can still build/upload Android APKs without Apple signing secrets.
+
+Status:
+Workflow fix pending commit/push and a replacement pre-release tag.
