@@ -35,10 +35,11 @@ jobs:
           - platform: linux
             os: ubuntu-24.04-arm
             arch: arm64
+    continue-on-error: ${{ contains(github.ref, '-') && matrix.platform != 'android' }}
 
     steps:
       - name: Setup Rust for Windows ARM64
-        if: startsWith(matrix.os, 'windows-11-arm') && env.IS_STABLE == 'true'
+        if: startsWith(matrix.os, 'windows-11-arm')
         run: |
           Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile rustup-init.exe
           .\rustup-init.exe -y --default-toolchain stable
@@ -46,7 +47,7 @@ jobs:
           Add-Content $env:GITHUB_PATH $cargoPath
       
       - name: Setup Rust ARM64 target for cross-compilation
-        if: matrix.platform == 'windows' && matrix.arch == 'arm64' && !startsWith(matrix.os, 'windows-11-arm') && env.IS_STABLE == 'true'
+        if: matrix.platform == 'windows' && matrix.arch == 'arm64' && !startsWith(matrix.os, 'windows-11-arm')
         run: rustup target add aarch64-pc-windows-msvc
 
       - name: Checkout
@@ -110,7 +111,6 @@ jobs:
           echo "keyPassword=$KEY_PASSWORD_VALUE" >> android/local.properties
 
       - name: Setup Go
-        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.0"
@@ -118,24 +118,22 @@ jobs:
             core/go.sum
 
       - name: Setup Flutter (ARM)
-        if: (startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) && env.IS_STABLE == 'true'
+        if: startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')
         uses: subosito/flutter-action@v2
         with:
           channel: "master"
           cache: true
 
       - name: Setup Flutter
-        if: ${{ !(startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) && (matrix.platform == 'android' || env.IS_STABLE == 'true') }}
+        if: ${{ !(startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) }}
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.7"
           cache: true
 
-      - if: matrix.platform == 'android' || env.IS_STABLE == 'true'
-        run: flutter --version
+      - run: flutter --version
 
       - name: Get Flutter Dependency
-        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         run: flutter pub get
 
       - name: Setup Xcode Signing Configuration
@@ -151,18 +149,28 @@ jobs:
 
           echo "✅ Created Local.xcconfig for signing"
 
+      - name: Setup unsigned macOS build
+        if: matrix.platform == 'macos' && env.IS_STABLE != 'true'
+        run: |
+          cat > macos/Runner/Configs/Local.xcconfig << EOF
+          CODE_SIGNING_ALLOWED = NO
+          CODE_SIGNING_REQUIRED = NO
+          CODE_SIGN_IDENTITY =
+          DEVELOPMENT_TEAM =
+          EOF
+
+          echo "Created Local.xcconfig for unsigned pre-release macOS build"
+
       - name: Setup Inno Setup
-        if: matrix.platform == 'windows' && env.IS_STABLE == 'true'
+        if: matrix.platform == 'windows'
         run: |
           choco install innosetup -y
           echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Setup
-        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         run: dart setup.dart ${{ matrix.platform }} ${{ matrix.arch && format('--arch {0}', matrix.arch) }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }}
 
       - name: Upload
-        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: artifact-${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) }}
