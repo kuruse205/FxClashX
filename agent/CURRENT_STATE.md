@@ -6,13 +6,13 @@ Last updated: 2026-05-30.
 
 - Branch: `main`.
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
-- Current pushed commit: `13c699a chore(release): rename product artifacts to FxClashX`.
+- Current pushed commit: latest `main` after Android runtime package resolution, default new dashboard, release workflow fix, and release-state memory update.
 - Recent durable commits:
+  - `7f578e4` allows APK prerelease publishing and documents release workflow behavior.
+  - `6ce2bbd` skips macOS signing for prereleases.
+  - `504673e` fixes Android service startup under runtime app id and enables upstream new dashboard by default.
   - `13c699a` product/release artifact rename to `FxClashX`.
-  - `16373d0` removed stale files after upstream-safe merge.
-  - `21a7442` merged `fx/upstream-dev-safe` into `main`.
-  - `c5d856b` bootstrapped project agent memory.
-- Local work after `d1586e5` fixes Android service package resolution and enables upstream new dashboard by default; commit/push pending.
+- Latest GitHub APK pre-release: `v0.4.0-fx.7`, Actions run `26663124884`, release URL `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
 
 ## Identity
 

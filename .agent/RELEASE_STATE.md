@@ -6,8 +6,10 @@ Last updated: 2026-05-30.
 
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
 - Current branch: `main`.
-- Current pushed commit: latest `main` after the Android runtime package fix.
+- Current pushed commit: latest `main` after the Android runtime package fix, new dashboard default, release workflow fix, and release-state memory update.
 - Release workflow uses `v*` tags. Pre-release tags build/upload Android APK artifacts only, skip signed macOS artifact download, and can use debug signing fallback when Android signing secrets are incomplete.
+- Latest GitHub APK pre-release: `v0.4.0-fx.7` at commit `7f578e4`.
+- GitHub Actions run `26663124884` completed successfully and published the four Android APK assets.
 
 ## Product Naming
 
@@ -23,6 +25,12 @@ Last updated: 2026-05-30.
 ## Latest Android APK Build
 
 Built locally on Windows from `main` after fixing Android runtime service package resolution.
+
+Latest GitHub release APK rebuild:
+
+- Tag: `v0.4.0-fx.7`.
+- Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
+- Published assets checked with HTTP `200`: `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
 
 Command:
 

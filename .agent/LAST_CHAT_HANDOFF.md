@@ -13,6 +13,10 @@ Completed in this session:
 - Found why the UI looked old: upstream made the new dashboard opt-in. FxClashX now defaults `AppSettingProps.newDashboard` to `true`, while the "New look" / "Новый вид" setting can still turn it off.
 - Verified by ADB screenshot that `Главная` shows the new dashboard by default.
 - Rebuilt all Android APKs into `dist/`.
+- Pushed the Android runtime/UI fixes to `main`.
+- Fixed `.github/workflows/build.yaml` so prerelease tags publish Android APKs without being blocked by missing Apple signing secrets or incomplete Android signing secrets.
+- Pushed tag `v0.4.0-fx.7` and verified GitHub Actions run `26663124884` completed successfully.
+- GitHub pre-release `v0.4.0-fx.7` published all four Android APK assets.
 
 Validation completed:
 
@@ -22,6 +26,7 @@ Validation completed:
 - `adb install -r -d .\dist\FxClashX-android-arm64-v8a.apk`
 - Device `logcat` final check: no old `com.follow.clashx/.service.RemoteService not found` failure in the checked window.
 - Device screenshot final check: new dashboard visible on `Главная`.
+- GitHub release asset checks returned HTTP `200` for `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
 
 Latest Android artifacts:
 
@@ -29,6 +34,10 @@ Latest Android artifacts:
 - `dist/FxClashX-android-armeabi-v7a.apk`
 - `dist/FxClashX-android-x86_64.apk`
 - `dist/FxClashX-android-universal.apk`
+
+Latest GitHub release:
+
+- `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`
 
 Keep in mind:
 

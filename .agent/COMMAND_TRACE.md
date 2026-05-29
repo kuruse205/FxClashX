@@ -193,7 +193,11 @@ Actions:
 
 Verification:
 
-- Pending GitHub Actions verification on the next replacement tag after this workflow patch is pushed.
+- Pushed `main` commit `7f578e4` and tag `v0.4.0-fx.7`.
+- GitHub Actions run `26663124884` completed successfully.
+- Android build job completed `dart setup.dart android` and uploaded `artifact-android`.
+- Release upload job completed successfully and created pre-release `v0.4.0-fx.7`.
+- Direct release asset checks returned HTTP `200` for `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
 
 Rollback:
 Revert the release workflow changes if signed Android releases plus desktop/macOS artifacts must be mandatory for every `v*` tag. Before rollback, configure all required repository secrets or pre-release APK publication will be blocked again.

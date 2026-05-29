@@ -8,8 +8,9 @@ This is the fast entry point for future agents. For full details, read `.agent/M
 
 - Branch: `main`.
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
-- Current pushed commit: latest `main` after the Android runtime package fix.
+- Current pushed commit: latest `main` after the Android runtime package fix, new dashboard default, release workflow fix, and release-state memory update.
 - GitHub release pre-release tags build/upload Android APK artifacts only, skip signed macOS artifact download, and can use debug signing fallback if Android signing secrets are incomplete.
+- Latest GitHub APK pre-release: `v0.4.0-fx.7`, Actions run `26663124884`, release URL `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
 - `main` already includes the upstream-safe work from `fx/upstream-dev-safe`.
 - The working tree was clean after push except the pre-existing untracked `.claude/` directory.
 

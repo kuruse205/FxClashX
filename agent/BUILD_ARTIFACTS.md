@@ -27,3 +27,10 @@ Generated APKs in `dist/`:
 | `FxClashX-android-x86_64.apk` | 55747633 | `133117cdc1a447ff984740830512a4362680fce0f40b319df108242b687f43c3` |
 
 Final arm64 APK was installed on ADB device `M2101K9AG`; `libcore.so` loaded, `RemoteService created` appeared, and the new dashboard appeared by default.
+
+GitHub release APK rebuild:
+
+- Tag: `v0.4.0-fx.7`.
+- GitHub Actions run: `26663124884`.
+- Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
+- Published Android assets checked with HTTP `200`: `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
