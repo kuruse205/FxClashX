@@ -17,6 +17,10 @@ Completed in this session:
 - Fixed `.github/workflows/build.yaml` so prerelease tags publish Android APKs without being blocked by missing Apple signing secrets or incomplete Android signing secrets.
 - Pushed tag `v0.4.0-fx.7` and verified GitHub Actions run `26663124884` completed successfully.
 - GitHub pre-release `v0.4.0-fx.7` published all four Android APK assets.
+- Expanded pre-release CI to build Android, Windows, Linux, and unsigned macOS artifacts.
+- Fixed pre-release macOS DMG packaging by passing `create-dmg --no-code-sign`.
+- Pushed tag `v0.4.0-fx.9` and verified GitHub Actions run `26664860579` completed successfully.
+- GitHub pre-release `v0.4.0-fx.9` published Android APKs, Windows ZIP/setup EXE files, Linux DEB/RPM/AppImage files, and unsigned macOS DMGs.
 
 Validation completed:
 
@@ -27,6 +31,7 @@ Validation completed:
 - Device `logcat` final check: no old `com.follow.clashx/.service.RemoteService not found` failure in the checked window.
 - Device screenshot final check: new dashboard visible on `Главная`.
 - GitHub release asset checks returned HTTP `200` for `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
+- GitHub release asset checks for `v0.4.0-fx.9` returned HTTP `200` for all expected Android, Windows, Linux, and macOS assets.
 
 Latest Android artifacts:
 
@@ -37,7 +42,7 @@ Latest Android artifacts:
 
 Latest GitHub release:
 
-- `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`
+- `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.9`
 
 Keep in mind:
 

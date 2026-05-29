@@ -34,3 +34,10 @@ GitHub release APK rebuild:
 - GitHub Actions run: `26663124884`.
 - Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
 - Published Android assets checked with HTTP `200`: `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
+
+GitHub multi-platform release rebuild:
+
+- Tag: `v0.4.0-fx.9`.
+- GitHub Actions run: `26664860579`.
+- Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.9`.
+- Published assets checked with HTTP `200`: Android APKs, Windows `amd64`/`arm64` ZIP and setup EXE files, Linux `amd64` DEB/RPM/AppImage and `arm64` DEB files, and unsigned macOS `amd64`/`arm64` DMGs.

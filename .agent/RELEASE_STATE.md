@@ -6,10 +6,12 @@ Last updated: 2026-05-30.
 
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
 - Current branch: `main`.
-- Current pushed commit: latest `main` after the Android runtime package fix, new dashboard default, release workflow fix, and release-state memory update.
-- Release workflow uses `v*` tags. Pre-release tags build/upload Android APK artifacts only, skip signed macOS artifact download, and can use debug signing fallback when Android signing secrets are incomplete.
+- Current pushed commit: latest `main` after the Android runtime package fix, new dashboard default, multi-platform release workflow fix, and release-state memory update.
+- Release workflow uses `v*` tags. Pre-release tags build/upload Android, Windows, Linux, and unsigned macOS artifacts; stable tags still keep signed/notarized macOS behavior.
 - Latest GitHub APK pre-release: `v0.4.0-fx.7` at commit `7f578e4`.
 - GitHub Actions run `26663124884` completed successfully and published the four Android APK assets.
+- Latest GitHub multi-platform pre-release: `v0.4.0-fx.9` at commit `6f12106`.
+- GitHub Actions run `26664860579` completed successfully and published Android, Windows, Linux, and macOS assets.
 
 ## Product Naming
 
@@ -31,6 +33,17 @@ Latest GitHub release APK rebuild:
 - Tag: `v0.4.0-fx.7`.
 - Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.7`.
 - Published assets checked with HTTP `200`: `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, and `FxClashX-android-x86_64.apk`.
+
+Latest GitHub multi-platform release rebuild:
+
+- Tag: `v0.4.0-fx.9`.
+- Release URL: `https://github.com/kuruse205/FxClashX/releases/tag/v0.4.0-fx.9`.
+- Actions run: `26664860579`.
+- Published assets checked with HTTP `200`:
+  - Android: `FxClashX-android-arm64-v8a.apk`, `FxClashX-android-armeabi-v7a.apk`, `FxClashX-android-universal.apk`, `FxClashX-android-x86_64.apk`.
+  - Windows: `FxClashX-windows-amd64.zip`, `FxClashX-windows-amd64-setup.exe`, `FxClashX-windows-arm64.zip`, `FxClashX-windows-arm64-setup.exe`.
+  - Linux: `FxClashX-linux-amd64.deb`, `FxClashX-linux-amd64.rpm`, `FxClashX-linux-amd64.AppImage`, `FxClashX-linux-arm64.deb`.
+  - macOS unsigned prerelease DMGs: `FxClashX-macos-amd64.dmg`, `FxClashX-macos-arm64.dmg`.
 
 Command:
 

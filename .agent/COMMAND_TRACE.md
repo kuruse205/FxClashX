@@ -201,3 +201,27 @@ Verification:
 
 Rollback:
 Revert the release workflow changes if signed Android releases plus desktop/macOS artifacts must be mandatory for every `v*` tag. Before rollback, configure all required repository secrets or pre-release APK publication will be blocked again.
+
+## 2026-05-30 - Publish Multi-Platform Pre-release Artifacts
+
+Goal:
+Build and publish release files for Android, Windows, Linux, and macOS for the fork.
+
+Actions:
+
+- Updated `.github/workflows/build.yaml` so pre-release tags run the full platform matrix instead of Android-only.
+- Kept Android as a required pre-release job; desktop jobs are best-effort for pre-release tags but strict for stable tags.
+- Added unsigned macOS pre-release configuration through `Local.xcconfig`.
+- Updated `setup.dart` so pre-release DMG creation passes `--no-code-sign`; stable macOS signing/notarization remains unchanged.
+- Pushed `main` commits `06ac792` and `6f12106`.
+- Pushed tag `v0.4.0-fx.9`.
+
+Verification:
+
+- GitHub Actions run `26664860579` completed successfully.
+- All build jobs completed successfully: Android, Windows amd64/arm64, Linux amd64/arm64, macOS amd64/arm64.
+- Release upload job completed successfully.
+- Direct release asset checks returned HTTP `200` for Android APKs, Windows ZIP/setup EXE files, Linux DEB/RPM/AppImage files, and unsigned macOS DMGs.
+
+Rollback:
+Revert `06ac792` and `6f12106` if pre-release tags must return to Android-only output. Stable tag behavior remains strict and signed/notarized for macOS.
