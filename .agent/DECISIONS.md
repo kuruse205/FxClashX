@@ -4,10 +4,11 @@
 
 - Current repo files and live command output are the source of truth for future work.
 - Generated files under `lib/models/generated/`, `lib/providers/generated/`, and `lib/l10n/intl/` are present in the repository.
+- The public product name, GitHub-facing name, and release artifact prefix are `FxClashX`.
+- Internal compatibility identifiers such as Dart package `flclashx`, Android namespace `com.follow.clashx`, Kotlin class names containing `FlClashX`, and subscription header prefix `flclashx-*` should not be mass-renamed without a migration plan.
 
 ## Pending decisions
 
-- Which upstream project/version is source of truth.
 - How to keep fork changes separate from upstream merges.
 - Whether Android local proxy must always be auth-protected.
 - Whether provider headers can override client settings by default.

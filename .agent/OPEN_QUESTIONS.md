@@ -20,3 +20,4 @@
 - Which commands are safe for read-only diagnostics in constrained environments.
 - Whether README.md mojibake is intentional or a file encoding regression.
 - Whether `plugins/flutter_distributor/` is an intended vendored plugin, since it is currently untracked.
+- Whether/when to migrate internal compatibility identifiers from `flclashx`/`FlClashX` to `fxclashx`/`FxClashX`; do not do this without a migration plan.

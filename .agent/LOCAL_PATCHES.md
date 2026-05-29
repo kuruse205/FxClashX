@@ -12,6 +12,9 @@ Confirmed fork/custom behavior:
 - macOS uses status-bar style behavior in `macos/Runner/StatusBarController.swift` and a fixed-size app surface in `lib/application.dart`.
 - Custom release workflow builds Android, Windows, Linux, and macOS artifacts from tags and includes macOS sign/notarize workflow.
 - Generated core version file `lib/core_version.dart` is written by `setup.dart` from `core/go.mod`.
+- Public product naming and release artifact naming are `FxClashX`.
+- GitHub release links/API calls are normalized to `kuruse205/FxClashX`.
+- `setup.dart` now produces `FxClashX-android-*.apk` for Android release builds.
 
 Potential drift/conflict areas:
 

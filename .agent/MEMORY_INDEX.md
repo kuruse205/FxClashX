@@ -19,6 +19,7 @@ Use this route map before starting work.
 | Linux dependencies | `runbooks/desktop-build.md`, `runbooks/local-dev.md` |
 | macOS signing/notarization | `runbooks/android-release-signing.md`, `runbooks/release-pipeline.md`, `UPDATE_GATES.md` |
 | Android signing/APK release | `runbooks/android-release-signing.md`, `runbooks/release-pipeline.md` |
+| Current release/artifact state | `RELEASE_STATE.md`, `COMMAND_TRACE.md`, `LAST_CHAT_HANDOFF.md` |
 | Localization/ARB | `runbooks/localization-update.md`, `skills/localization-workflow.md` |
 | Generated code/build_runner | `PROJECT_STATE.md`, `runbooks/flutter-build.md` |
 | Release pipeline | `runbooks/release-pipeline.md`, `skills/build-release-workflow.md` |

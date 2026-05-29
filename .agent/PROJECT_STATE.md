@@ -1,16 +1,18 @@
 # Project State
 
-Confirmed by read-only audit on 2026-05-30.
+Confirmed by repo audit and local build on 2026-05-30.
 
 ## Purpose
 
-FxClashX/FlClashX is a Flutter/Dart multi-platform proxy client fork of FlClash based on ClashMeta/Mihomo. It targets Android and desktop platforms.
+FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, ClashMeta, and Mihomo. It targets Android and desktop platforms.
 
 ## App Identity
 
 - Pub package: `flclashx` in `pubspec.yaml`.
 - Pub version: `0.4.0+2026012301`.
 - Shared app constant: `FxClashX` in `lib/common/constant.dart`.
+- Origin repository: `https://github.com/kuruse205/FxClashX.git`.
+- Public release artifact prefix: `FxClashX`.
 - Android namespace: `com.follow.clashx`.
 - Android default applicationId: `com.fxclashx.app`, overridable by Gradle property `applicationIdOverride`.
 - Android default label: `FxClashX`, overridable by Gradle property `appLabelOverride`.
@@ -103,6 +105,10 @@ FxClashX/FlClashX is a Flutter/Dart multi-platform proxy client fork of FlClash 
 ## Build And Release
 
 - Local build wrapper: `dart setup.dart <platform> [--arch <arch>] [--out core|app] [--env pre|stable]`.
+- Local Windows Flutter path used successfully: `C:\Users\Erik\devdeps\flutter\bin\flutter.bat`.
+- Local Flutter version confirmed: `3.41.9` stable with Dart `3.11.5`.
+- Local Android NDK used successfully: `C:\Users\Erik\Android\Sdk\ndk\28.0.13004108`.
+- Latest local Android build generated `dist/FxClashX-android-*.apk`; see `RELEASE_STATE.md`.
 - Makefile shortcuts include Android ARM64, Android app, macOS ARM64, core-only targets, local macOS builds, notarization, and clean.
 - CI release workflow: `.github/workflows/build.yaml`, tag-triggered on `v*`.
 - CI core workflow: `.github/workflows/build-core.yaml`, manual input `version`.
@@ -137,7 +143,7 @@ Variable names observed, values not recorded:
 
 ## Must Verify Live
 
-- Exact local Flutter version installed.
+- Exact local Flutter version installed. Confirmed on 2026-05-30: Flutter `3.41.9`, Dart `3.11.5`.
 - Whether `lib/clash/generated/clash_ffi.dart` is intentionally absent.
 - Whether the `ffigen` header path in `pubspec.yaml` is stale.
 - Whether generated files are regenerated locally or committed after each change.

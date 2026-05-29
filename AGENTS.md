@@ -4,10 +4,17 @@ This file is repository-local memory for FxClashX. The project is a Flutter/Dart
 
 Before any non-trivial task, read:
 
+- `agent.md`
 - `.agent/MEMORY_INDEX.md`
 - `.agent/PROJECT_CUTOFF.md`
 - `.agent/PROJECT_STATE.md`
 - `.agent/LAST_CHAT_HANDOFF.md`
+
+Compatibility entry points:
+
+- `agent.md` is the short human/agent handoff.
+- `agent/` mirrors the most important current-state facts for tools that expect `./agent`.
+- `.agent/` remains the detailed memory source of truth.
 
 For subscription, profile, and header work, read:
 
