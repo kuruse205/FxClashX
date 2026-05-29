@@ -4,29 +4,15 @@
 
 </div>
 
-## FxClashX
+## FlClashX
 
-[![Downloads](https://img.shields.io/github/downloads/kuruse205/FxClashX/total?style=flat-square&logo=github)](https://github.com/kuruse205/FxClashX/releases/)
-[![Last Version](https://img.shields.io/github/release/kuruse205/FxClashX/all.svg?style=flat-square)](https://github.com/kuruse205/FxClashX/releases/)
-[![License](https://img.shields.io/github/license/kuruse205/FxClashX?style=flat-square)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/pluralplay/FlClashX/total?style=flat-square&logo=github)](https://github.com/pluralplay/FlClashX/releases/)
+[![Last Version](https://img.shields.io/github/release/pluralplay/FlClashX/all.svg?style=flat-square)](https://github.com/pluralplay/FlClashX/releases/)
+[![License](https://img.shields.io/github/license/pluralplay/FlClashX?style=flat-square)](LICENSE)
 
 [![Channel](https://img.shields.io/badge/Telegram-Chat-blue?style=flat-square&logo=telegram)](https://t.me/FlClashX)
 
-FxClashX — форк многоплатформенного прокси-клиента FlClash на основе Mihomo/ClashMeta, простого и удобного в использовании, с открытым исходным кодом и без рекламы.
-
-## Исправления безопасности Android
-
-В этом форке исправлена уязвимость Android runtime-конфигурации, при которой стороннее Android-приложение могло найти открытый локальный HTTP/SOCKS proxy на `127.0.0.1` и использовать VPN-прокси без авторизации.
-
-Что исправлено:
-
-- На Android локальные proxy listeners выключены по умолчанию перед запуском Mihomo core: `mixed-port`, `port` и `socks-port` принудительно выставляются в `0`.
-- `allow-lan` принудительно выставляется в `false`, а `bind-address` — в `127.0.0.1`, даже если профиль или подписка содержит небезопасные значения вроде `allow-lan: true` или `bind-address: "*"`.
-- Очищаются LAN allow/disallow списки для Android runtime-конфига, включая опасные диапазоны `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `::1/128` и `fc00::/7`.
-- Очищается `skip-auth-prefixes`, чтобы `127.0.0.1/8` и `::1/128` не могли обходить proxy-аутентификацию.
-- Если локальный proxy включается вручную, он запускается только на runtime-порту из ephemeral range и только с сгенерированной `user:password` аутентификацией.
-- Сгенерированные данные local proxy не сохраняются в subscription/profile YAML и не предназначены для вывода в обычные UI/логи.
-- Android unit/regression tests покрывают sanitizer, чтобы небезопасные значения из подписки не могли вернуться в runtime config.
+Форк многоплатформенного прокси-клиента FlClash на основе ClashMeta, простого и удобного в использовании, с открытым исходным кодом и без рекламы.
 
 Десктопный вид:
 
@@ -335,16 +321,7 @@ flclashx-androidsecure: true
 
 ## Скачать
 
-<a href="https://github.com/kuruse205/FxClashX/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
-
-Для Android-релиза публикуются такие APK:
-
-- `FxClashX-universal-stable-release.apk` — универсальный APK для большинства пользователей.
-- `FxClashX-arm64-v8a-stable-release.apk` — APK только для современных ARM64-устройств.
-- `FxClashX-armeabi-v7a-stable-release.apk` — APK для старых 32-битных ARM-устройств.
-- `FxClashX-x86_64-stable-release.apk` — APK для x86_64 эмуляторов и устройств.
-
-Если не знаете, какой файл нужен, скачивайте universal APK.
+<a href="https://github.com/pluralplay/FlClashX/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
 
 ## Star
 

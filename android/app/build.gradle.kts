@@ -23,9 +23,6 @@ val isRelease = mStoreFile.exists()
         && mKeyPassword != null
 val applicationIdOverride = providers.gradleProperty("applicationIdOverride").orNull
 val appLabelOverride = providers.gradleProperty("appLabelOverride").orNull
-val isSplitPerAbi = providers.gradleProperty("split-per-abi")
-    .map { it.toBoolean() }
-    .orElse(false)
 
 android {
     namespace = "com.follow.clashx"
@@ -49,11 +46,6 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["appLabel"] = appLabelOverride ?: "FxClashX"
-        if (!isSplitPerAbi.get()) {
-            ndk {
-                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
-            }
-        }
     }
 
     signingConfigs {
@@ -104,6 +96,8 @@ flutter {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":common"))
+    implementation(project(":service"))
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.code.gson:gson:2.10.1")

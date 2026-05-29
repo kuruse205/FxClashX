@@ -1,0 +1,79 @@
+name: build-android-debug-apk
+
+on:
+  push:
+    branches:
+      - fx/upstream-dev-safe-pr
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ANDROID_NDK_VERSION: "28.0.13004108"
+
+jobs:
+  build:
+    name: Build Android debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.0"
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.7"
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager --install "ndk;${ANDROID_NDK_VERSION}"
+          echo "ANDROID_NDK=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" >> "${GITHUB_ENV}"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build mihomo Android library
+        run: dart setup.dart android --out core
+
+      - name: Read core version
+        shell: bash
+        run: |
+          version="$(grep -oE 'github.com/metacubex/mihomo v[0-9.]+' core/go.mod | awk '{print $2}')"
+          echo "CORE_VERSION=${version}" >> "${GITHUB_ENV}"
+
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=APP_ENV=pre \
+            --dart-define=CORE_VERSION=${CORE_VERSION}
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-debug.apk dist/FxClashX-android-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FxClashX-android-debug-apk
+          path: dist/FxClashX-android-debug.apk
+          if-no-files-found: error
