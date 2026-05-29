@@ -38,8 +38,12 @@ jobs:
           flutter-version: "3.41.7"
           cache: true
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android NDK
         run: |
+          yes | sdkmanager --licenses >/dev/null
           sdkmanager --install "ndk;${ANDROID_NDK_VERSION}"
           echo "ANDROID_NDK=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" >> "${GITHUB_ENV}"
           echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" >> "${GITHUB_ENV}"
