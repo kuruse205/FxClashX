@@ -7,6 +7,7 @@ Last updated: 2026-05-30.
 - Origin: `https://github.com/kuruse205/FxClashX.git`.
 - Current branch: `main`.
 - Current pushed commit: latest `main` after the Android runtime package fix.
+- Release workflow uses `v*` tags. Pre-release tags build/upload Android APK artifacts only, skip signed macOS artifact download, and can use debug signing fallback when Android signing secrets are incomplete.
 
 ## Product Naming
 

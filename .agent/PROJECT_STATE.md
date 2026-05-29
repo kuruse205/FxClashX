@@ -115,6 +115,7 @@ FxClashX is a Flutter/Dart multi-platform proxy client fork based on FlClash, Cl
 - Final arm64 APK was installed on ADB device `M2101K9AG` and verified to load `libcore.so` and create `RemoteService`.
 - Makefile shortcuts include Android ARM64, Android app, macOS ARM64, core-only targets, local macOS builds, notarization, and clean.
 - CI release workflow: `.github/workflows/build.yaml`, tag-triggered on `v*`.
+- Release workflow pre-release tags build/upload Android APK artifacts only, skip signed macOS artifact download, and can use debug signing fallback when Android signing secrets are incomplete.
 - CI core workflow: `.github/workflows/build-core.yaml`, manual input `version`.
 - macOS sign/notarize reusable workflow: `.github/workflows/macos-sign-notarize.yaml`.
 - Release upload creates GitHub release artifacts and stable sha256 files.

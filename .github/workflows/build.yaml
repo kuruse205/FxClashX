@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Setup Rust for Windows ARM64
-        if: startsWith(matrix.os, 'windows-11-arm')
+        if: startsWith(matrix.os, 'windows-11-arm') && env.IS_STABLE == 'true'
         run: |
           Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile rustup-init.exe
           .\rustup-init.exe -y --default-toolchain stable
@@ -46,7 +46,7 @@ jobs:
           Add-Content $env:GITHUB_PATH $cargoPath
       
       - name: Setup Rust ARM64 target for cross-compilation
-        if: matrix.platform == 'windows' && matrix.arch == 'arm64' && !startsWith(matrix.os, 'windows-11-arm')
+        if: matrix.platform == 'windows' && matrix.arch == 'arm64' && !startsWith(matrix.os, 'windows-11-arm') && env.IS_STABLE == 'true'
         run: rustup target add aarch64-pc-windows-msvc
 
       - name: Checkout
@@ -94,13 +94,23 @@ jobs:
 
       - name: Setup Android Signing
         if: startsWith(matrix.platform,'android')
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
+          KEY_ALIAS_VALUE: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD_VALUE: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD_VALUE: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/keystore.jks
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/local.properties
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/local.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/local.properties
+          if [ -z "$KEYSTORE_B64" ] || [ -z "$KEY_ALIAS_VALUE" ] || [ -z "$STORE_PASSWORD_VALUE" ] || [ -z "$KEY_PASSWORD_VALUE" ]; then
+            echo "Android signing secrets are incomplete; using debug signing fallback."
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 --decode > android/app/keystore.jks
+          echo "keyAlias=$KEY_ALIAS_VALUE" >> android/local.properties
+          echo "storePassword=$STORE_PASSWORD_VALUE" >> android/local.properties
+          echo "keyPassword=$KEY_PASSWORD_VALUE" >> android/local.properties
 
       - name: Setup Go
+        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.0"
@@ -108,22 +118,24 @@ jobs:
             core/go.sum
 
       - name: Setup Flutter (ARM)
-        if: startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')
+        if: (startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) && env.IS_STABLE == 'true'
         uses: subosito/flutter-action@v2
         with:
           channel: "master"
           cache: true
 
       - name: Setup Flutter
-        if: ${{ !(startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) }}
+        if: ${{ !(startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')) && (matrix.platform == 'android' || env.IS_STABLE == 'true') }}
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.7"
           cache: true
 
-      - run: flutter --version
+      - if: matrix.platform == 'android' || env.IS_STABLE == 'true'
+        run: flutter --version
 
       - name: Get Flutter Dependency
+        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         run: flutter pub get
 
       - name: Setup Xcode Signing Configuration
@@ -140,15 +152,17 @@ jobs:
           echo "✅ Created Local.xcconfig for signing"
 
       - name: Setup Inno Setup
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && env.IS_STABLE == 'true'
         run: |
           choco install innosetup -y
           echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Setup
+        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         run: dart setup.dart ${{ matrix.platform }} ${{ matrix.arch && format('--arch {0}', matrix.arch) }} ${{ env.IS_STABLE == 'true' && '--env stable' || '' }}
 
       - name: Upload
+        if: matrix.platform == 'android' || env.IS_STABLE == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: artifact-${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) }}
@@ -274,7 +288,7 @@ jobs:
           merge-multiple: true
 
       - name: Download signed macOS artifacts
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.IS_STABLE == 'true'
         uses: actions/download-artifact@v6
         with:
           path: ./dist/
@@ -384,5 +398,9 @@ jobs:
           RELEASE_URL: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
           IS_STABLE: ${{ env.IS_STABLE }}
         run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHANNEL_ID_1" ] || [ -z "$TELEGRAM_CHANNEL_ID_2" ] || [ -z "$TELEGRAM_CHANNEL_ID_3" ]; then
+            echo "Telegram notification secrets are incomplete; skipping notification."
+            exit 0
+          fi
           python3 -m pip install requests --quiet
           python3 .github/scripts/notify_telegram.py

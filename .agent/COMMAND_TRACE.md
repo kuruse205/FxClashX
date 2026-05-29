@@ -175,3 +175,25 @@ Actions:
 
 Status:
 Workflow fix pending commit/push and a replacement pre-release tag.
+
+## 2026-05-30 - Allow GitHub Prerelease APK Builds Without Signing Secrets
+
+Goal:
+Make GitHub Releases rebuild and publish Android APK files from a pre-release tag even when Apple signing secrets or Android signing secrets are not configured.
+
+Actions:
+
+- Observed replacement tag `v0.4.0-fx.6` run after the first macOS signing fix.
+- Confirmed macOS signing setup was skipped for pre-release tags, but Android still failed because empty signing secrets produced an invalid `android/app/keystore.jks`.
+- Updated `.github/workflows/build.yaml` so Android signing setup only writes `keystore.jks` and `android/local.properties` when all Android signing secrets are present.
+- Added debug-signing fallback for incomplete Android signing secrets.
+- Updated pre-release workflow behavior so non-Android setup/build/upload steps run only for stable tags; pre-release tags focus on Android APK artifacts.
+- Updated release upload so signed macOS artifacts are downloaded only for stable tags.
+- Made Telegram notifications skip cleanly when notification secrets are incomplete, after the GitHub release step.
+
+Verification:
+
+- Pending GitHub Actions verification on the next replacement tag after this workflow patch is pushed.
+
+Rollback:
+Revert the release workflow changes if signed Android releases plus desktop/macOS artifacts must be mandatory for every `v*` tag. Before rollback, configure all required repository secrets or pre-release APK publication will be blocked again.
