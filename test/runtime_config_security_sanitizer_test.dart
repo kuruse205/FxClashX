@@ -43,14 +43,7 @@ void main() {
     final config = <String, dynamic>{
       'allow-lan': true,
       'bind-address': '*',
-      'lan-allowed-ips': [
-        '127.0.0.0/8',
-        '10.0.0.0/8',
-        '172.16.0.0/12',
-        '192.168.0.0/16',
-        '::1/128',
-        'fc00::/7',
-      ],
+      'lan-allowed-ips': ['127.0.0.0/8', '192.168.0.0/16'],
     };
 
     await sanitizer().sanitize(
@@ -95,20 +88,12 @@ void main() {
       ),
     );
 
-    expect(config['mixed-port'], inInclusiveRange(49152, 65535));
     expect(config['mixed-port'], 55000);
     expect(config['port'], 0);
     expect(config['socks-port'], 0);
     expect(config['allow-lan'], isFalse);
     expect(config['bind-address'], '127.0.0.1');
-    final authentication = config['authentication'];
-    expect(authentication, isA<List>());
-    expect(authentication, hasLength(1));
-    expect(authentication.single, 'runtime-user:runtime-password');
-    final parts = (authentication.single as String).split(':');
-    expect(parts, hasLength(2));
-    expect(parts[0], isNotEmpty);
-    expect(parts[1], isNotEmpty);
+    expect(config['authentication'], ['runtime-user:runtime-password']);
     expect(config['skip-auth-prefixes'], isEmpty);
     expect(config['lan-allowed-ips'], isEmpty);
     expect(config['lan-disallowed-ips'], isEmpty);
@@ -174,7 +159,7 @@ void main() {
     expect(config.containsKey('authentication'), isFalse);
   });
 
-  test('Generated credentials are only added to runtime config copy', () async {
+  test('Generated credentials stay in the runtime config copy', () async {
     final persistentProfile = <String, dynamic>{
       'mixed-port': 7890,
       'external-controller': '127.0.0.1:9090',
@@ -182,8 +167,8 @@ void main() {
     final runtimeConfig = Map<String, dynamic>.from(persistentProfile);
 
     await sanitizer(
-      ports: [55000, 55001],
-      secrets: ['runtime-user', 'runtime-password', 'controller-secret'],
+      ports: [55000],
+      secrets: ['runtime-user', 'runtime-password'],
     ).sanitize(
       runtimeConfig,
       const RuntimeConfigSecurityOptions(

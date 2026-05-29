@@ -26,7 +26,6 @@ migrate_working_dir/
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
 .vscode/
-.claude/settings.local.json
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -39,13 +38,6 @@ migrate_working_dir/
 .pub/
 /build/
 /dist/
-/android/.gradle/
-/android/.kotlin/
-/android/build/
-/android/app/.gradle/
-/android/app/build/
-/android/core/build/
-/android/local.properties
 /android/core/.cxx/
 /service/
 
@@ -59,6 +51,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local properties (contains SDK path, potentially sensitive)
+android/local.properties
+
+# Project assets
+store/
+docs/
 
 # Helper
 /services/helper/target/
@@ -76,3 +75,7 @@ app.*.map.json
 # Environment variables (contains sensitive data)
 .env
 *.local.sh
+
+
+# Landing page (deployed separately)
+docs/

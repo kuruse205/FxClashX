@@ -36,7 +36,6 @@ class GlobalState {
   static GlobalState? _instance;
   Map<CacheTag, double> cacheScrollPosition = {};
   Map<CacheTag, FixedMap<String, double>> cacheHeightMap = {};
-  bool isService = false;
   Timer? timer;
   Timer? groupsUpdateTimer;
   late Config config;
@@ -52,6 +51,7 @@ class GlobalState {
   CorePalette? corePalette;
   DateTime? startTime;
   UpdateTasks tasks = [];
+  Map<String, dynamic>? lastRuntimeConfig;
   // Effective external-controller endpoint after merging subscription value
   // over UI defaults. Empty string means disabled. Subscription value wins if
   // present, otherwise falls back to the UI toggle default.
@@ -67,12 +67,15 @@ class GlobalState {
   // (proxy-groups[*].description). Shown as the subtitle of a nested group
   // card instead of its type (Fallback/URLTest/Selector).
   final groupDescriptions = ValueNotifier<Map<String, String>>({});
-  final navigatorKey = GlobalKey<NavigatorState>();
-  AppController? _appController;
+  final xhttpTransportMetadata =
+      ValueNotifier<Map<String, XhttpTransportInfo>>({});
+  String? _lastXhttpWarningSignature;
   // Backend-only Android local proxy escape hatch. It is intentionally not
   // persisted in profiles/subscriptions; a future advanced setting can wire it
   // into startup without exposing generated credentials in normal UI or logs.
   bool androidLocalProxyEnabled = false;
+  final navigatorKey = GlobalKey<NavigatorState>();
+  AppController? _appController;
   GlobalKey<CommonScaffoldState> homeScaffoldKey = GlobalKey();
   bool isInit = false;
 
@@ -114,7 +117,9 @@ class GlobalState {
   Future<void> init() async {
     packageInfo = await PackageInfo.fromPlatform();
     config = await preferences.getConfig() ??
-        const Config(themeProps: defaultThemeProps);
+        const Config(
+          themeProps: defaultThemeProps,
+        );
     await globalState.migrateOldData(config);
     await AppLocalizations.load(
       utils.getLocaleForString(config.appSetting.locale) ??
@@ -130,7 +135,7 @@ class GlobalState {
       this.tasks = tasks;
     }
     await executorUpdateTask();
-    timer = Timer(const Duration(seconds: 1), () async {
+    timer = Timer(const Duration(seconds: 3), () async {
       startUpdateTasks();
     });
   }
@@ -189,7 +194,7 @@ class GlobalState {
                   Navigator.of(context).pop(true);
                 },
                 child: Text(confirmText ?? appLocalizations.confirm),
-              ),
+              )
             ],
             child: Container(
               width: 300,
@@ -200,34 +205,15 @@ class GlobalState {
                     style: Theme.of(context).textTheme.labelLarge,
                     children: [message],
                   ),
-                  style: const TextStyle(overflow: TextOverflow.visible),
+                  style: const TextStyle(
+                    overflow: TextOverflow.visible,
+                  ),
                 ),
               ),
             ),
           ),
         ),
       );
-
-  // Future<Map<String, dynamic>> getProfileMap(String id) async {
-  //   final profilePath = await appPath.getProfilePath(id);
-  //   final res = await Isolate.run<Result<dynamic>>(() async {
-  //     try {
-  //       final file = File(profilePath);
-  //       if (!await file.exists()) {
-  //         return Result.error("");
-  //       }
-  //       final value = await file.readAsString();
-  //       return Result.success(utils.convertYamlNode(loadYaml(value)));
-  //     } catch (e) {
-  //       return Result.error(e.toString());
-  //     }
-  //   });
-  //   if (res.isSuccess) {
-  //     return res.data as Map<String, dynamic>;
-  //   } else {
-  //     throw res.message;
-  //   }
-  // }
 
   Future<T?> showCommonDialog<T>({
     required Widget child,
@@ -258,7 +244,9 @@ class GlobalState {
       } else {
         showMessage(
           title: title ?? appLocalizations.tip,
-          message: TextSpan(text: e.toString()),
+          message: TextSpan(
+            text: e.toString(),
+          ),
         );
       }
       return null;
@@ -287,7 +275,9 @@ class GlobalState {
   Future<void> migrateOldData(Config config) async {
     final clashConfig = await preferences.getClashConfig();
     if (clashConfig != null) {
-      config = config.copyWith(patchClashConfig: clashConfig);
+      config = config.copyWith(
+        patchClashConfig: clashConfig,
+      );
       preferences.clearClashConfig();
       preferences.saveConfig(config);
     }
@@ -303,8 +293,13 @@ class GlobalState {
     );
   }
 
-  Future<SetupParams> getSetupParams({required ClashConfig pathConfig}) async {
-    final clashConfig = await patchRawConfig(patchConfig: pathConfig);
+  Future<SetupParams> getSetupParams({
+    required ClashConfig pathConfig,
+  }) async {
+    final clashConfig = await patchRawConfig(
+      patchConfig: pathConfig,
+    );
+    lastRuntimeConfig = clashConfig;
     final params = SetupParams(
       config: clashConfig,
       selectedMap: config.currentProfile?.selectedMap ?? {},
@@ -314,8 +309,7 @@ class GlobalState {
   }
 
   Future<ClashConfig> syncNetworkSettingsFromProvider(
-    ClashConfig patchConfig,
-  ) async {
+      ClashConfig patchConfig) async {
     if (config.appSetting.overrideNetworkSettings) {
       return patchConfig; // User wants to override, keep current settings
     }
@@ -399,9 +393,19 @@ class GlobalState {
       }
     }
     groupDescriptions.value = parsedGroupDescriptions;
-    // external-controller: non-Android keeps the profile value when present.
-    // Android gets a final security pass below that restricts or removes the
-    // listener and guarantees a non-empty runtime-only secret.
+    final parsedXhttpTransports = detectXhttpTransports(rawConfig);
+    xhttpTransportMetadata.value = parsedXhttpTransports;
+    final xhttpSignature = xhttpTransportSignature(parsedXhttpTransports);
+    if (parsedXhttpTransports.isNotEmpty &&
+        xhttpSignature != _lastXhttpWarningSignature) {
+      _lastXhttpWarningSignature = xhttpSignature;
+      showNotifier(xhttpDelayWarningMessage);
+    }
+    // external-controller: profile value always wins when present. The UI
+    // toggle only acts as a fallback because the enum hardcodes 127.0.0.1:9090
+    // and would otherwise silently override a subscription-provided endpoint
+    // (e.g. :9091). The overrideNetworkSettings gate is intentionally ignored
+    // here — users who set external-controller in their profile mean it.
     final providerExternalController =
         (rawConfig["external-controller"] as String?)?.trim() ?? "";
     final effectiveExternalControllerValue =
@@ -480,9 +484,13 @@ class GlobalState {
       }
     }
 
-    // Legacy provider opt-in remains accepted, but Android no longer depends
-    // on this header for safety. RuntimeConfigSecuritySanitizer below applies
-    // secure defaults for every Android profile.
+    // flclashx-androidsecure header: when set to "true" on Android, force
+    // mixed-port = 0 so the HTTP/SOCKS inbound is disabled and traffic can
+    // only leave through the VpnService/TUN. Applied as a final override
+    // regardless of overrideNetworkSettings or UI-configured port, because
+    // the header expresses an explicit policy from the subscription provider
+    // that should not be overridable from the app side. No-op on other
+    // platforms — desktop TUN gating is handled separately.
     if (Platform.isAndroid) {
       final secureHeader = profile.providerHeaders['flclashx-androidsecure']
           ?.trim()
@@ -495,7 +503,8 @@ class GlobalState {
     if (rawConfig["tun"] == null) {
       rawConfig["tun"] = {};
     }
-    rawConfig["tun"]["enable"] = realPatchConfig.tun.enable;
+    rawConfig["tun"]["enable"] =
+        Platform.isAndroid ? true : realPatchConfig.tun.enable;
     rawConfig["tun"]["device"] = realPatchConfig.tun.device;
     rawConfig["tun"]["dns-hijack"] = realPatchConfig.tun.dnsHijack;
 
@@ -596,8 +605,7 @@ class GlobalState {
     if (overrideDns || !isEnableDns) {
       final dns = switch (!isEnableDns) {
         true => realPatchConfig.dns.copyWith(
-            nameserver: [...realPatchConfig.dns.nameserver, "system://"],
-          ),
+            nameserver: [...realPatchConfig.dns.nameserver, "system://"]),
         false => realPatchConfig.dns,
       };
       rawConfig["dns"] = dns.toJson();
@@ -635,10 +643,7 @@ class GlobalState {
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
-    final configMap = await switch (clashLibHandler != null) {
-      true => clashLibHandler!.getConfig(profileId),
-      false => clashCore.getConfig(profileId),
-    };
+    final configMap = await clashCore.getConfig(profileId);
     configMap["rules"] = configMap["rule"];
     configMap.remove("rule");
     return configMap;
@@ -698,7 +703,9 @@ class DetectionState {
     debouncer.call(
       FunctionTag.checkIp,
       _checkIp,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(
+        milliseconds: 1200,
+      ),
     );
   }
 
@@ -724,29 +731,49 @@ class DetectionState {
         state.value.ipInfo != null) {
       return;
     }
+    final justStarted = _preIsStart == false && isStart;
     _clearSetTimeoutTimer();
-    state.value = state.value.copyWith(isLoading: true, ipInfo: null);
+    state.value = state.value.copyWith(
+      isLoading: true,
+      ipInfo: null,
+    );
     _preIsStart = isStart;
     if (cancelToken != null) {
       cancelToken!.cancel();
       cancelToken = null;
     }
+    if (justStarted) {
+      await Future.delayed(const Duration(milliseconds: 2000));
+    }
     cancelToken = CancelToken();
-    state.value = state.value.copyWith(isTesting: true);
+    state.value = state.value.copyWith(
+      isTesting: true,
+    );
     final res = await request.checkIp(cancelToken: cancelToken);
     if (res.isError) {
-      state.value = state.value.copyWith(isLoading: true, ipInfo: null);
+      state.value = state.value.copyWith(
+        isLoading: true,
+        ipInfo: null,
+      );
       return;
     }
     final ipInfo = res.data;
-    state.value = state.value.copyWith(isTesting: false);
+    state.value = state.value.copyWith(
+      isTesting: false,
+    );
     if (ipInfo != null) {
-      state.value = state.value.copyWith(isLoading: false, ipInfo: ipInfo);
+      state.value = state.value.copyWith(
+        isLoading: false,
+        ipInfo: ipInfo,
+      );
       return;
     }
     _clearSetTimeoutTimer();
     _setTimeoutTimer = Timer(const Duration(milliseconds: 300), () {
-      state.value = state.value.copyWith(isLoading: false, ipInfo: null);
+      state.value = state.value.copyWith(
+        isLoading: false,
+        ipInfo: null,
+      );
     });
   }
 

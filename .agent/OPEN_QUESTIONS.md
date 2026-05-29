@@ -1,0 +1,22 @@
+# Open Questions
+
+- Exact upstream sync strategy.
+- Supported Flutter version for local dev beyond CI using Flutter `3.41.7` for non-ARM runners and `master` for ARM runners.
+- Supported Mihomo core version policy beyond current `github.com/metacubex/mihomo v1.19.25`.
+- How to regenerate FFI bindings, and whether the `pubspec.yaml` ffigen header path is stale.
+- Whether `lib/clash/generated/clash_ffi.dart` should exist or is obsolete after Android moved to MethodChannel/AIDL.
+- How to run Android sanitizer regression tests in CI and locally.
+- How to validate subscription headers end-to-end with sample response headers and profile YAML.
+- How to test Remnawave HWID behavior against supported panel versions.
+- How to test Android VPN service locally on device/emulator, including Always-on and widget cold-start paths.
+- How to test desktop tray/status bar behavior on each desktop platform.
+- Release signing ownership.
+- Android keystore handling policy.
+- macOS notarization handling policy.
+- Which artifacts are official release artifacts for Windows ARM naming, Linux RPM, and signed macOS DMGs.
+- Whether generated files are committed after local generation or regenerated in CI.
+- How to reproduce full release locally.
+- Where crash logs are stored on each platform.
+- Which commands are safe for read-only diagnostics in constrained environments.
+- Whether README.md mojibake is intentional or a file encoding regression.
+- Whether `plugins/flutter_distributor/` is an intended vendored plugin, since it is currently untracked.
